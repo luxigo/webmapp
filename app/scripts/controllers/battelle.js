@@ -34,12 +34,12 @@
 
 /**
  * @ngdoc function
- * @name trackerApp.controller:BattelleCtrl
+ * @name webmappApp.controller:BattelleCtrl
  * @description
  * # BattelleCtrl
- * Controller of the trackerApp
+ * Controller of the webmappApp
  */
-angular.module('trackerApp')
+angular.module('webmappApp')
   .controller('BattelleCtrl', function ($scope,$http,$location,$timeout,notify,leafletData,leafletDrawEvents,$q) {
     this.awesomeThings = [
       'HTML5 Boilerplate',
@@ -261,6 +261,7 @@ angular.module('trackerApp')
         created: function(e,leafletEvent, leafletObject, model, modelName) {
           $scope.drawnItems.addLayer(leafletEvent.layer);
           console.log('created',arguments);
+          console.log(JSON.stringify(leafletEvent.layer.toGeoJSON(),null,4));
         },
         edited: function(arg) {console.log(arguments)},
         deleted: function(arg) {
@@ -373,13 +374,70 @@ angular.module('trackerApp')
       }, // setupEventHandlers
 
       init: function init(){
-        $scope.loadLayers().then(function(){
+        var q=$q.defer();
+
+        $scope.loadLayers().then(function success(){
           $scope.setupEventHandlers();
+          q.resolve();
+
+        }, function error(err){
+          q.reject(err);
         });
+
+        return q.promise;
+
       } // init
 
     });
 
-    $scope.init();
+    $scope.geojson={
+      style: {
+          fillColor: "green",
+          weight: 2,
+          opacity: 1,
+          color: 'white',
+          dashArray: '3',
+          fillOpacity: 0.7
+      }
+    };
+
+    $scope.init().then(function(){
+
+      // iterate: get the lates geojson (server should make it a long poll)
+      function iter(){
+        var q=$q.defer();
+        $http.get('layers/battelle/live.geojson?'+Date.now()).then(function success(res){
+          console.log(res.data);
+          q.resolve(res.data);
+
+        }, function error(res){
+          console.log(res);
+          q.reject(new Error('Could not load layers/battelle/live.geojson'));
+
+        });
+
+        return q.promise;
+      } // iter
+
+      // infinite loop: iterate indefinitely
+      function loop() {
+        iter().then(function(data){
+          $scope.geojson.data=data;
+
+          $timeout(function(){
+              loop();
+          },2000);
+
+        }, function fail(err) {
+          notify.message(err.message);
+          $timeout(function(){
+            loop();
+          },5000);
+        });
+      } // loop
+
+      loop();
+
+    });
 
   });
