@@ -1,5 +1,5 @@
 {
-  "name": "tracker",
+  "name": "webmapp",
   "private": true,
   "devDependencies": {
     "autoprefixer-core": "^5.2.1",

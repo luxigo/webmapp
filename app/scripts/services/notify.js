@@ -34,12 +34,12 @@
 
 /**
  * @ngdoc service
- * @name trackerApp.notify
+ * @name webmappApp.notify
  * @description
  * # notify
- * Service in the trackerApp.
+ * Service in the webmappApp.
  */
-angular.module('trackerApp')
+angular.module('webmappApp')
   .service('notify', function () {
     // AngularJS will instantiate a singleton by calling "new" on this function
     this.message=function(message){

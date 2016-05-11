@@ -1,5 +1,5 @@
 {
-  "name": "tracker",
+  "name": "webmapp",
   "version": "0.0.0",
   "dependencies": {
     "angular": "^1.4.0",
@@ -26,7 +26,7 @@
     "angular-mocks": "^1.4.0"
   },
   "appPath": "app",
-  "moduleName": "trackerApp",
+  "moduleName": "webmappApp",
   "overrides": {
     "bootstrap": {
       "main": [

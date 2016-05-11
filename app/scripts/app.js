@@ -34,14 +34,14 @@
 
 /**
  * @ngdoc overview
- * @name trackerApp
+ * @name webmappApp
  * @description
- * # trackerApp
+ * # webmappApp
  *
  * Main module of the application.
  */
 angular
-  .module('trackerApp', [
+  .module('webmappApp', [
     'ngAnimate',
     'ngCookies',
     'ngResource',

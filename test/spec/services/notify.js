@@ -3,7 +3,7 @@
 describe('Service: notify', function () {
 
   // load the service's module
-  beforeEach(module('trackerApp'));
+  beforeEach(module('webmappApp'));
 
   // instantiate service
   var notify;

@@ -2,12 +2,12 @@
 
 /**
  * @ngdoc function
- * @name trackerApp.controller:AboutCtrl
+ * @name webmappApp.controller:AboutCtrl
  * @description
  * # AboutCtrl
- * Controller of the trackerApp
+ * Controller of the webmappApp
  */
-angular.module('trackerApp')
+angular.module('webmappApp')
   .controller('AboutCtrl', function () {
     this.awesomeThings = [
       'HTML5 Boilerplate',
