@@ -8,7 +8,13 @@
     <!-- Place favicon.ico and apple-touch-icon.png in the root directory -->
     <!-- build:css(.) styles/vendor.css -->
     <!-- bower:css -->
+    <link rel="stylesheet" href="bower_components/bootstrap/dist/css/bootstrap.css" />
     <link rel="stylesheet" href="bower_components/leaflet/dist/leaflet.css" />
+    <link rel="stylesheet" href="bower_components/leaflet-dist/leaflet.css" />
+    <link rel="stylesheet" href="bower_components/leaflet-draw/dist/leaflet.draw.css" />
+    <link rel="stylesheet" href="bower_components/leaflet.locatecontrol/dist/L.Control.Locate.css" />
+    <link rel="stylesheet" href="bower_components/leaflet-minimap/dist/Control.MiniMap.min.css" />
+    <link rel="stylesheet" href="bower_components/Leaflet.EasyButton/src/easy-button.css" />
     <!-- endbower -->
     <!-- endbuild -->
     <!-- build:css(.tmp) styles/main.css -->
@@ -81,9 +87,22 @@
     <script src="bower_components/angular-route/angular-route.js"></script>
     <script src="bower_components/angular-sanitize/angular-sanitize.js"></script>
     <script src="bower_components/angular-touch/angular-touch.js"></script>
-    <script src="bower_components/leaflet/dist/leaflet-src.js"></script>
-    <script src="bower_components/angular-leaflet-directive/dist/angular-leaflet-directive.js"></script>
     <script src="bower_components/proj4/dist/proj4.js"></script>
+    <script src="bower_components/bootstrap/dist/js/bootstrap.js"></script>
+    <script src="bower_components/remarkable-bootstrap-notify/bootstrap-notify.js"></script>
+    <script src="bower_components/angular-simple-logger/dist/angular-simple-logger.js"></script>
+    <script src="bower_components/leaflet/dist/leaflet-src.js"></script>
+    <script src="bower_components/leaflet-dist/leaflet.js"></script>
+    <script src="bower_components/ui-leaflet/dist/ui-leaflet.js"></script>
+    <script src="bower_components/leaflet-draw/dist/leaflet.draw-src.js"></script>
+    <script src="bower_components/ui-leaflet-draw/dist/ui-leaflet-draw.js"></script>
+    <script src="bower_components/leaflet.locatecontrol/src/L.Control.Locate.js"></script>
+    <script src="bower_components/leaflet-minimap/dist/Control.MiniMap.min.js"></script>
+    <script src="bower_components/leaflet-slider/dist/leaflet.SliderControl.min.js"></script>
+    <script src="bower_components/spin.js/spin.js"></script>
+    <script src="bower_components/leaflet-spin/leaflet.spin.js"></script>
+    <script src="bower_components/shp/dist/shp.js"></script>
+    <script src="bower_components/Leaflet.EasyButton/src/easy-button.js"></script>
     <!-- endbower -->
     <!-- endbuild -->
 
@@ -92,6 +111,7 @@
         <script src="scripts/controllers/main.js"></script>
         <script src="scripts/controllers/about.js"></script>
         <script src="scripts/controllers/battelle.js"></script>
+        <script src="scripts/services/notify.js"></script>
         <!-- endbuild -->
 </body>
 </html>
