@@ -4,6 +4,7 @@ webapp for web maps based on angularjs and ui-leaflet
 ## Prerequisite
 
 * node > 4.4.0
+
 I recommend you install node via nvm which allow upgrading and switching versions easily:
   https://github.com/creationix/nvm
 ```
@@ -22,7 +23,9 @@ sudo gem install compass
 ```
 
 * Other required packages
+```
 npm install -g yo generator-angular grunt grunt-cli grunt-karma bower
+```
 
 ## Installation
 ```
