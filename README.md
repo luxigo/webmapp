@@ -13,7 +13,7 @@ To generate the base layers we are using ctb-tiles or gdal2tiles with geolocated
 
 To get live information from the servers we can use long polls, server events or socktetio.
 
-An angular directive will eventually emerge from the actual view.
+An angular directive will eventually emerge from the actual view, and a dynamic json resource could be used to define and configure the available views
 
 Yeoman angular-generator was choosed because it's brings in:
 - a formatted collaborative environment
