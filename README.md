@@ -19,7 +19,7 @@ Yeoman angular-generator was choosed because it's brings in:
 - a formatted collaborative environment
 - powerful tools like bower, wiredep, sass, auto-prefixer, live-reload and more
 
-To start we are simply gonna fetch a json file from the server to update the overlays. 
+To start we are simply fetching a json file repeatedly from the server to update the overlays. 
 
 Subsequently, Strongloop and the loopback-sdk-angular could be used to generate a database abstraction layer (a HTTP REST API plus a javascript CRUD API available both server side and client side) and manage access control lists (ACL) 
 
