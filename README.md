@@ -21,7 +21,7 @@ To start we are simply fetching a json file repeatedly from the server to update
 
 Subsequently, Strongloop and the loopback-sdk-angular could be used to generate a database abstraction layer (a HTTP REST API plus a javascript CRUD API available both server side and client side) and manage access control lists (ACL) 
 
-An angular directive will eventually emerge from the actual view, and a dynamic json resource could be used to define and configure the available views
+An angular directive will eventually emerge from the actual view, and a dynamic json resource could be used to define and configure the available views.
 
 
 ## Installation
