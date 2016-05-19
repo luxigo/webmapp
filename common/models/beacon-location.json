@@ -1,0 +1,34 @@
+{
+  "name": "BeaconLocation",
+  "base": "PersistedModel",
+  "idInjection": true,
+  "options": {
+    "validateUpsert": true,
+    "mysql": {
+      "table": "beacon_location"
+    }
+  },
+  "properties": {
+    "timestamp": {
+      "type": "number",
+      "required": true,
+      "description": "Date of the localisation"
+    },
+    "geo": {
+      "type": [
+        "number"
+      ],
+      "required": true,
+      "description": "3D coordinates (meters) relative to the base station."
+    }
+  },
+  "validations": [],
+  "relations": {
+    "beacon": {
+      "type": "belongsTo",
+      "model": "Beacon"
+    }
+  },
+  "acls": [],
+  "methods": {}
+}

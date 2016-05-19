@@ -262,6 +262,7 @@ angular.module('webmappApp')
           $scope.drawnItems.addLayer(leafletEvent.layer);
           console.log('created',arguments);
           console.log(JSON.stringify(leafletEvent.layer.toGeoJSON(),null,4));
+          console.log($scope.drawnItems);
         },
         edited: function(arg) {console.log(arguments)},
         deleted: function(arg) {
@@ -403,6 +404,13 @@ angular.module('webmappApp')
 
     $scope.init().then(function(){
 
+/*
+shp('shape/CAD_BATIMENT_HORSOL_TOIT').then(function(data){
+  $scope.geojson.data=data;
+  console.log(data)
+});
+return;
+*/
       // iterate: get the lates geojson (server should make it a long poll)
       function iter(){
         var q=$q.defer();
@@ -426,7 +434,7 @@ angular.module('webmappApp')
 
           $timeout(function(){
               loop();
-          },2000);
+          },1200000);
 
         }, function fail(err) {
           notify.message(err.message);

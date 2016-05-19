@@ -1,0 +1,49 @@
+{
+  "name": "Beacon",
+  "base": "PersistedModel",
+  "idInjection": true,
+  "options": {
+    "validateUpsert": true,
+    "mysql": {
+      "table": "beacon"
+    }
+  },
+  "properties": {
+    "mac": {
+      "type": "string",
+      "required": true,
+      "description": "MAC address of the beacon"
+    },
+    "uuid": {
+      "type": "string",
+      "required": true,
+      "description": "Unique identifier"
+    },
+    "minor": {
+      "type": "number",
+      "required": true
+    },
+    "major": {
+      "type": "number",
+      "required": true
+    },
+    "rssi": {
+      "type": "number",
+      "required": true,
+      "description": "Signal strength at 1m"
+    }
+  },
+  "validations": [],
+  "relations": {
+    "place": {
+      "type": "belongsTo",
+      "model": "Place"
+    },
+    "locations": {
+      "type": "hasMany",
+      "model": "BeaconLocation"
+    }
+  },
+  "acls": [],
+  "methods": {}
+}

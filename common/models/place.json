@@ -1,0 +1,38 @@
+{
+  "name": "Place",
+  "base": "PersistedModel",
+  "idInjection": true,
+  "options": {
+    "validateUpsert": true,
+    "mysql": {
+      "table": "place"
+    }
+  },
+  "properties": {
+    "name": {
+      "type": "string",
+      "required": true
+    },
+    "bounds": {
+      "type": [
+        "number"
+      ],
+      "required": true,
+      "description": "MN95 boundaries"
+    }
+
+  },
+  "validations": [],
+  "relations": {
+    "receivers": {
+      "type": "hasMany",
+      "model": "Receiver"
+    },
+    "beaconLocations": {
+      "type": "hasMany",
+      "model": "BeaconLocation"
+    }
+  },
+  "acls": [],
+  "methods": {}
+}

@@ -1,0 +1,57 @@
+{
+  "name": "Receiver",
+  "plural": "Receivers",
+  "base": "PersistedModel",
+  "idInjection": true,
+  "options": {
+    "validateUpsert": true,
+    "mysql": {
+      "table": "receiver"
+    }
+  },
+  "properties": {
+    "mac": {
+      "type": "string",
+      "required": true,
+      "description": "The receiver MAC address"
+    },
+    "ip": {
+      "type": "number",
+      "required": true,
+      "description": "The last byte of the receiver IP address"
+    },
+    "timestamp": {
+      "type": "number",
+      "required": true,
+      "description": "The date of this record"
+    },
+    "geo": {
+      "type": [
+        "number"
+      ],
+      "required": true,
+      "description": [
+        "The geospatial details for the receiver.",
+        "The three first coordinates [x,y,z] are relative to the base station",
+        "(bottom-left) and expressed in meters.",
+        "For the three primary receivers (bottom-left, top-left and bottom-right)",
+        "it is followed by their MN95 coordinates [E,N,alt] for map display.",
+        "In both coordinate systems the Y axis unit vector Yu is norm(topLeft-botLeft)",
+        "and the orthogonal X axis clockwise is [Yu.y,-Yu.x]."
+      ]
+    }
+  },
+  "validations": [],
+  "relations": {
+    "place": {
+      "type": "belongsTo",
+      "model": "Place"
+    },
+    "signals": {
+      "type": "hasMany",
+      "model": "Signal"
+    }
+  },
+  "acls": [],
+  "methods": {}
+}

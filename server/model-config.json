@@ -1,0 +1,55 @@
+{
+  "_meta": {
+    "sources": [
+      "loopback/common/models",
+      "loopback/server/models",
+      "../common/models",
+      "./models"
+    ],
+    "mixins": [
+      "loopback/common/mixins",
+      "loopback/server/mixins",
+      "../common/mixins",
+      "./mixins"
+    ]
+  },
+  "User": {
+    "dataSource": "db"
+  },
+  "AccessToken": {
+    "dataSource": "db",
+    "public": false
+  },
+  "ACL": {
+    "dataSource": "db",
+    "public": false
+  },
+  "RoleMapping": {
+    "dataSource": "db",
+    "public": false
+  },
+  "Role": {
+    "dataSource": "db",
+    "public": false
+  },
+  "Receiver": {
+    "dataSource": "mysql",
+    "public": true
+  },
+  "Beacon": {
+    "dataSource": "mysql",
+    "public": true
+  },
+  "BeaconLocation": {
+    "dataSource": "mysql",
+    "public": true
+  },
+  "Signal": {
+    "dataSource": "mysql",
+    "public": true
+  },
+  "Place": {
+    "dataSource": "mysql",
+    "public": true
+  }
+}

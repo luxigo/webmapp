@@ -1,0 +1,36 @@
+{
+  "name": "Signal",
+  "base": "PersistedModel",
+  "idInjection": true,
+  "options": {
+    "validateUpsert": true,
+    "mysql": {
+      "table": "signal"
+    }
+  },
+  "properties": {
+    "timestamp": {
+      "type": "number",
+      "required": true,
+      "description": "Date where the signal was measured"
+    },
+    "strength": {
+      "type": "number",
+      "required": true,
+      "description": "Signal strength"
+    }
+  },
+  "validations": [],
+  "relations": {
+    "receiver": {
+      "type": "belongsTo",
+      "model": "Receiver"
+    },
+    "beacon": {
+      "type": "belongsTo",
+      "model": "Beacon"
+    }
+  },
+  "acls": [],
+  "methods": {}
+}
