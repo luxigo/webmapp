@@ -213,7 +213,11 @@ angular.module('webmappApp')
                 $scope.downloadLink=document.createElement("a");
                 $scope.downloadLink.download='battelle-geojson.json';
               }
-              $scope.downloadLink.href='data:text/json;charset=utf-8,'+encodeURIComponent($scope.object_list.join(','));
+              var geojson={
+                type: "FeatureCollection",
+                features: $scope.features
+              }
+              $scope.downloadLink.href='data:text/json;charset=utf-8,'+encodeURIComponent(JSON.stringify(geojson,null,4));
               $scope.downloadLink.click();
             }
             }]
@@ -299,11 +303,12 @@ angular.module('webmappApp')
       }, // drawEventHandlers
 
       updateObjectList: function updateObjectList() {
-        var object_list=$scope.object_list=[];
+        var features=$scope.features=[];
+        console.log($scope.drawnItems._layers)
         angular.forEach($scope.drawnItems._layers,function(layer){
-          object_list.push(JSON.stringify(layer.toGeoJSON(),null,4));
+          features.push(layer.toGeoJSON());
         });
-        $scope.saveButton[object_list.length?'enable':'disable']();
+        $scope.saveButton[features.length?'enable':'disable']();
 
       }, // updateObjectList
 
