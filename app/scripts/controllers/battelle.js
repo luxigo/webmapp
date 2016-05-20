@@ -213,12 +213,16 @@ angular.module('webmappApp')
                 $scope.downloadLink=document.createElement("a");
                 $scope.downloadLink.download='battelle-geojson.json';
               }
+              var link=$scope.downloadLink;
               var geojson={
                 type: "FeatureCollection",
                 features: $scope.features
               }
-              $scope.downloadLink.href='data:text/json;charset=utf-8,'+encodeURIComponent(JSON.stringify(geojson,null,4));
-              $scope.downloadLink.click();
+              link.href='data:text/json;charset=utf-8,'+encodeURIComponent(JSON.stringify(geojson,null,4));
+              document.body.appendChild(link);
+              link.click();
+              document.body.removeChild(link);
+              link.remove();
             }
             }]
           }),
