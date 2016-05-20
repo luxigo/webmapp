@@ -1,6 +1,60 @@
 # webmapp
 webapp for web maps based on angularjs and ui-leaflet
 
+## Status
+Early development stage
+
+## Background
+We began to develop an application aiming to display live map overlays for several pre-defined locations using [ui-leaflet] (https://github.com/angular-ui/ui-leaflet).
+
+The base layers (sattelite, plan, geojson) have to be available offline.
+
+To generate the base layers we are using [ctb-tiles] (https://github.com/geo-data/cesium-terrain-builder) or [gdal2tiles] (http://www.gdal.org/gdal2tiles.html) with geolocated raster images or vector data.
+
+To get live information from the servers we can use long polls, server events or socktetio.
+
+[Yeoman] (http://yeoman.io) [generator-angular] (https://github.com/yeoman/generator-angular) was choosed because it's brings in:
+- a formatted collaborative environment
+- powerful tools like bower, wiredep, sass, auto-prefixer, live-reload and more
+
+To start we are simply fetching a json file repeatedly from the server to update the overlays. 
+
+Subsequently, [Strongloop] (http://www.strongloop.com) and the [loopback-sdk-angular] (https://github.com/strongloop/loopback-sdk-angular) could be used to generate a database abstraction layer (a HTTP REST API plus a javascript CRUD API available both server side and client side) and manage access control lists (ACL) 
+
+An [angular directive] (https://docs.angularjs.org/guide/directive) will eventually emerge from the actual view, and a (dynamic) json resource could be used to define and configure the available views.
+
+
+# Installation
+```
+git clone https://github.com/luxigo/webmapp
+```
+
+The application html root is located in webmapp/dist.
+
+The layers directory (currently omitted) is webmapp/app/layers and should be copied in webmapp/dist/layers
+
+Actually the application main view is "app/views/battelle" which is looking for 'layers/battelle/layers.json'
+
+The actual layers.json file format is:
+```
+{ 
+  "layer_name": {
+    "description": "layer name",
+    "baseLayer": <boolean>,
+    "visible": <boolean>,
+    "type": <leaflet-layer-type>,  // eg "xyz" or "geoJSONShape"
+    "url": <url>, // according to leaflet layer type
+    "projection": <proj4-projection-type>, // eg "WGS84"
+    "center": <coordinates-array>, // expressed in proj4-projection-type
+    "options": <leaflet-layer-options>
+    },
+    ...
+}
+```
+  
+  
+# Development
+
 ## Prerequisite
 
 * node > 4.4.0
@@ -27,21 +81,20 @@ sudo gem install compass
 npm install -g yo generator-angular grunt grunt-cli grunt-karma bower
 ```
 
-## Installation
+## Install dependencies
 ```
-git clone https://github.com/luxigo/webmapp
 cd webmapp
 npm install
 bower install
 ```
 
-## Build & development
+## Build, serve and reload
 ```
-grunt --force
+grunt --force watch
 grunt serve
 ```
 
-## YO
+# YO
 
 This project is generated with [yo angular generator](https://github.com/yeoman/generator-angular)
 version 0.15.1.
