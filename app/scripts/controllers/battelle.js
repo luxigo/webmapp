@@ -204,20 +204,40 @@ angular.module('webmappApp')
             toggleDisplay: true
         },
         custom: [
-          L.control.locate({follow: true}),
-          L.easyButton('fa-crosshairs fa-lg', function(btn, map) {
-            var hair=$('.hair');
-            if (hair.is(':visible')) {
-              hair.hide(0);
-              $('#mousecoords').hide();
-              $scope.hairVisible=false;
-    //          $('#lf-battelle').css('cursor','');
-            } else {
-              hair.show(0);
-              $('#mousecoords').show();
-              $scope.hairVisible=true;
-    //          $('#lf-battelle').css('cursor','none');
+          $scope.saveButton=L.easyButton({
+            states: [{
+            title: 'Save shapes',
+            icon: 'fa-save fa-lg',
+            onClick: function(btn, map) {
+              if (!$scope.downloadlink) {
+                $scope.downloadLink=document.createElement("a");
+                $scope.downloadLink.download='battelle-geojson.json';
+              }
+              $scope.downloadLink.href='data:text/json;charset=utf-8,'+encodeURIComponent($scope.object_list.join(','));
+              $scope.downloadLink.click();
             }
+            }]
+          }),
+//        L.control.locate({follow: true}),
+          L.easyButton({
+            states: [{
+              title: 'Toggle crosshair',
+              icon: 'fa-crosshairs fa-lg',
+              onClick: function(btn, map) {
+                var hair=$('.hair');
+                if (hair.is(':visible')) {
+                  hair.hide(0);
+                  $('#mousecoords').hide();
+                  $scope.hairVisible=false;
+        //          $('#lf-battelle').css('cursor','');
+                } else {
+                  hair.show(0);
+                  $('#mousecoords').show();
+                  $scope.hairVisible=true;
+        //          $('#lf-battelle').css('cursor','none');
+                }
+              }
+            }]
           })
         ]
 
@@ -260,14 +280,14 @@ angular.module('webmappApp')
       drawEventHandlers: {
         created: function(e,leafletEvent, leafletObject, model, modelName) {
           $scope.drawnItems.addLayer(leafletEvent.layer);
-          console.log('created',arguments);
-          console.log(JSON.stringify(leafletEvent.layer.toGeoJSON(),null,4));
+          $scope.updateObjectList();
         },
-        edited: function(arg) {console.log(arguments)},
-        deleted: function(arg) {
-          var layers;
-          layers = arg.layers;
-          $scope.drawnItems.removeLayer(layer);
+        edited: function(arg) {
+          $scope.updateObjectList();
+        },
+        deleted: function(e,leafletEvent) {
+          $scope.drawnItems.removeLayer(leafletEvent.layers);
+          $scope.updateObjectList();
         },
         drawstart: function(arg) {},
         drawstop: function(arg) {},
@@ -277,6 +297,15 @@ angular.module('webmappApp')
         deletestop: function(arg) {}
 
       }, // drawEventHandlers
+
+      updateObjectList: function updateObjectList() {
+        var object_list=$scope.object_list=[];
+        angular.forEach($scope.drawnItems._layers,function(layer){
+          object_list.push(JSON.stringify(layer.toGeoJSON(),null,4));
+        });
+        $scope.saveButton[object_list.length?'enable':'disable']();
+
+      }, // updateObjectList
 
       // ui-leaflet events we want to receive
       events: {
@@ -376,6 +405,8 @@ angular.module('webmappApp')
       init: function init(){
         var q=$q.defer();
 
+        $scope.saveButton.disable();
+
         $scope.loadLayers().then(function success(){
           $scope.setupEventHandlers();
           q.resolve();
@@ -426,7 +457,7 @@ angular.module('webmappApp')
 
           $timeout(function(){
               loop();
-          },2000);
+          },5000);
 
         }, function fail(err) {
           notify.message(err.message);
