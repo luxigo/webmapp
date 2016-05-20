@@ -424,6 +424,16 @@ module.exports = function (grunt) {
           ]
         }, {
           expand: true,
+          cwd: 'bower_components/font-awesome',
+          dest: '<%= yeoman.app %>',
+          src: ['fonts/*']
+        }, {
+          expand: true,
+          cwd: 'bower_components/font-awesome',
+          dest: '<%= yeoman.dist %>',
+          src: ['fonts/*']
+        }, {
+          expand: true,
           cwd: '.tmp/images',
           dest: '<%= yeoman.dist %>/images',
           src: ['generated/*']
