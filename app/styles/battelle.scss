@@ -6,18 +6,28 @@ div#battelle {
   bottom: 0px;
 
   #crosshair-h{
+/*
     width: 1cm;
-    height:1px;
+    margin-left: -0.5cm;
     top: 50%;
     left: 50%;
-    margin-left: -0.5cm;
+ */
+    width: 100%;
+    top: 0;
+    left: 0;
+    height:1px;
   }
   #crosshair-v{
+/*
     height: 1cm;
-    width:1px;
     left: 50%;
     top: 50%;
     margin-top: -0.5cm;
+ */
+    top: 0;
+    left: 0;
+    width:1px;
+    height: 100%;
   }
   .hair{
     z-index: 99;
