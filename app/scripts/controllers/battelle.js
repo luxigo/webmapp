@@ -240,10 +240,10 @@ angular.module('webmappApp')
               icon: 'fa-circle-o -fa-lg',
               onClick: function(btn, map) {
                 if (!$scope.hairFrozen) {
-                  alert('Select a place with the crosshairs, then press X to froze the crosshairs and click this button to set the origin.');
+                  alert('Select a place with the crosshairs, then press X to freeze the crosshairs and click this button to set the origin.');
                   return;
                 }
-                beacons.geolocation.bottomLeft=angular.copy($scope.frozenCoords.LV95);
+                beacons.geolocation.origin=angular.copy($scope.frozenCoords.LV95);
                 beacons.updateAxis();
               }
             }]
@@ -255,10 +255,10 @@ angular.module('webmappApp')
               icon: 'fa-dot-circle-o -fa-lg',
               onClick: function(btn, map) {
                 if (!$scope.hairFrozen) {
-                  alert('Select a place with the crosshairs, then press X to froze the crosshairs and click this button to set the vertical axis (from the origin).');
+                  alert('Select a place with the crosshairs, then press X to freeze the crosshairs and click this button to set the vertical axis (from the origin).');
                   return;
                 }
-                beacons.geolocation.topLeft=angular.copy($scope.frozenCoords.LV95);
+                beacons.geolocation.downVector=angular.copy($scope.frozenCoords.LV95);
                 beacons.updateAxis();
 
               }
@@ -468,6 +468,64 @@ angular.module('webmappApp')
         }
       }, // toggleHairFrozen
 
+      labels: {},
+
+      geojson: {
+        style: {
+            fillColor: "green",
+            weight: 2,
+            opacity: 1,
+            color: 'white',
+            dashArray: '3',
+            fillOpacity: 0.7
+        },
+
+        labelOptions: {
+          noHide: true
+        },
+
+        _onEachFeature: function geojson_onEachFeature(feature, layer) {
+          // create or re-use label
+          var shortname=feature.properties.description;
+          if (!layer.label) {
+            if ($scope.labels && $scope.labels[shortname]) {
+              layer.label=$scope.labels[shortname];
+            } else {
+              $scope.labels[shortname] = layer.label = new L.Label({
+                className: 'beacon'
+              }, layer);
+      		  }
+          }
+
+          layer.label.setContent(shortname);
+
+          if ($scope.labels_visible) {
+            $timeout(function(){
+              layer._showLabel(feature.properties);
+            },1);
+          }
+        }
+
+      },
+
+      removeExtraLabels: function removeExtraLabels(features){
+        // remove extra labels
+        var shortnames=Object.keys($scope.labels);
+        angular.forEach(features,function(feature){
+            var shortname=feature.properties.description;
+            var pos=shortnames.indexOf(shortname);
+            if (pos>=0) shortnames.splice(pos,1);
+        });
+        angular.forEach(shortnames,function(shortname){
+          var label=$scope.labels[shortname];
+          if (label) {
+            if ($scope.map.hasLayer(label)) {
+              $scope.map.removeLabel(label);
+            }
+          }
+        });
+      }, // removeExtraLabels
+
       init: function init(){
         var q=$q.defer();
 
@@ -487,33 +545,12 @@ angular.module('webmappApp')
 
     });
 
-    $scope.geojson={
-      style: {
-          fillColor: "green",
-          weight: 2,
-          opacity: 1,
-          color: 'white',
-          dashArray: '3',
-          fillOpacity: 0.7
-      }
-    };
 
     $scope.init().then(function(){
 
       // iterate: get the lates geojson (server should make it a long poll)
       function iter(){
         var q=$q.defer();
-/*
-        $http.get('layers/battelle/live.geojson?'+Date.now()).then(function success(res){
-          console.log(res.data);
-          q.resolve(res.data);
-
-        }, function error(res){
-          console.log(res);
-          q.reject(new Error('Could not load layers/battelle/live.geojson'));
-
-        });
-*/
 
         beacons.find(null,function(err,rows){
           if (err) {
@@ -521,7 +558,7 @@ angular.module('webmappApp')
             return q.reject(new Error('Could not get beacons coordinates'));
           } else {
             var featureCollection=beacons.toGeoJSON(rows||[]);
-            return q.resolve(featureCollection) //JSON.stringify(featureCollection,null,4));
+            return q.resolve(featureCollection);
           }
         });
 
@@ -531,6 +568,8 @@ angular.module('webmappApp')
       // infinite loop: iterate indefinitely
       function loop() {
         iter().then(function(data){
+
+          $scope.removeExtraLabels(data.features);
           $scope.geojson.data=data;
 
           $timeout(function(){
