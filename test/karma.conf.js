@@ -45,6 +45,7 @@ module.exports = function(config) {
       'bower_components/leaflet-spin/leaflet.spin.js',
       'bower_components/shp/dist/shp.js',
       'bower_components/Leaflet.EasyButton/src/easy-button.js',
+      'bower_components/requirejs/require.js',
       'bower_components/angular-mocks/angular-mocks.js',
       // endbower
       'app/scripts/**/*.js',

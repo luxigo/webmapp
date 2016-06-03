@@ -36,9 +36,9 @@ angular.module('webmappApp')
       geolocation: {
         proj: 'EPSG:2056',
         // origin
-        bottomLeft: [ 0, 0 ],
+        bottomLeft: [ 2499670.90206156, 1114753.42399633 ],
         // vertical axis
-        topLeft: [ 0, 0 ]
+        topLeft: [ 2499680.14609066, 1114764.71805181 ]
       },
 
       updateAxis: function beacons_updateAxis(){
@@ -81,7 +81,7 @@ angular.module('webmappApp')
         if (!beacons.axis) {
           return {};
         };
-        rows.push({shortname: 'ZERO', x:0, y:0});
+  //      rows.push({shortname: 'ZERO', x:0, y:0});
         var u=beacons.axis.X;
         var v=beacons.axis.Y;
         var origin=beacons.geolocation.bottomLeft;
@@ -104,8 +104,8 @@ angular.module('webmappApp')
               shortname: row.shortname
             },
             geometry: {
-              type: "LineString",
-              coordinates: geojson_square_coordinates(coords,0.5)
+              type: "Polygon",
+              coordinates: [geojson_square_coordinates(coords,0.5)]
             }
           });
 
@@ -119,5 +119,7 @@ angular.module('webmappApp')
       } // beacons_toGeoJSON
 
     });
+
+    beacons.updateAxis();
 
   });
