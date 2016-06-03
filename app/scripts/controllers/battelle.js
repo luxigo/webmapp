@@ -40,7 +40,7 @@
  * Controller of the webmappApp
  */
 angular.module('webmappApp')
-  .controller('BattelleCtrl', function ($scope,$http,$location,$timeout,notify,leafletData,leafletDrawEvents,$q) {
+  .controller('BattelleCtrl', function ($scope,$http,$location,$timeout,notify,leafletData,leafletDrawEvents,$q,beacons) {
     this.awesomeThings = [
       'HTML5 Boilerplate',
       'AngularJS',
@@ -55,16 +55,23 @@ angular.module('webmappApp')
     },1000);
 
 
-/*
     var cH = $('#crosshair-h');
     var cV = $('#crosshair-v');
     $(document).on('mousemove',function(e){
-      if ($scope.hairVisible) {
+      if ($scope.hairVisible && !$scope.hairFrozen) {
         cH.css('top',e.pageY);
         cV.css('left',e.pageX);
       }
     });
-*/
+
+    $(document).on('keydown',function(e){
+      console.log(e.keyCode);
+      switch(e.keyCode) {
+        case 88:
+          $scope.toggleHairFrozen();
+          break;
+      }
+    });
 
     $scope.center={
         lng: 6,
@@ -229,20 +236,53 @@ angular.module('webmappApp')
 //        L.control.locate({follow: true}),
           L.easyButton({
             states: [{
+              title: 'Set beacons coordinates origin',
+              icon: 'fa-circle-o -fa-lg',
+              onClick: function(btn, map) {
+                if (!$scope.hairFrozen) {
+                  alert('Select a place with the crosshairs, then press X to froze the crosshairs and click this button to set the origin.');
+                  return;
+                }
+                beacons.geolocation.bottomLeft=angular.copy($scope.frozenCoords.LV95);
+                beacons.updateAxis();
+              }
+            }]
+          }),
+
+          L.easyButton({
+            states: [{
+              title: 'Set vertical axis from origin',
+              icon: 'fa-dot-circle-o -fa-lg',
+              onClick: function(btn, map) {
+                if (!$scope.hairFrozen) {
+                  alert('Select a place with the crosshairs, then press X to froze the crosshairs and click this button to set the vertical axis (from the origin).');
+                  return;
+                }
+                beacons.geolocation.topLeft=angular.copy($scope.frozenCoords.LV95);
+                beacons.updateAxis();
+
+              }
+            }]
+          }),
+
+          L.easyButton({
+            states: [{
               title: 'Toggle crosshair',
               icon: 'fa-crosshairs fa-lg',
               onClick: function(btn, map) {
                 var hair=$('.hair');
+                $scope.hairFrozen=false;
+                $scope.coordsToDisplay="mouseCoords";
                 if (hair.is(':visible')) {
                   hair.hide(0);
                   $('#mousecoords').hide();
                   $scope.hairVisible=false;
-        //          $('#lf-battelle').css('cursor','');
+                  $('#lf-battelle').css('cursor','');
                 } else {
                   hair.show(0);
                   $('#mousecoords').show();
                   $scope.hairVisible=true;
-        //          $('#lf-battelle').css('cursor','none');
+                  $('#lf-battelle').css('cursor','none');
                 }
               }
             }]
@@ -334,7 +374,7 @@ angular.module('webmappApp')
         WGS84: [0,0]
       },
 
-      coordsToDisplay: 'centerCoords',
+      coordsToDisplay: 'mouseCoords',
 
       coordsProjection: 'LV95',
 
@@ -363,7 +403,7 @@ angular.module('webmappApp')
       // get and update scope.mousecCoords from leaflet mouse event coordinates
       getMouseCoords: function getMouseCoords(leafletMouseEvent) {
         var scope=this;
-        var coords=(leafletMouseEvent||scope.leafletMouseEvent).latlng;
+        var coords=(leafletMouseEvent||scope.leafletEvent).latlng;
         scope.mouseCoords.WGS84=[coords.lng,coords.lat];
         scope.mouseCoords.LV95=proj4('WGS84','EPSG:2056',[coords.lng,coords.lat]);
         return scope.mouseCoords;
@@ -376,11 +416,15 @@ angular.module('webmappApp')
         // update scope.leafletEvent on mousemove (convert coordinates only when needed)
         scope.$on('leafletDirectiveMap.lf-battelle.mousemove', function(event, args){
             scope.leafletEvent=args.leafletEvent;
+            scope.getMouseCoords();
         });
 
         // update scope.centerCoords on map move
         scope.$on('leafletDirectiveMap.lf-battelle.move', function(event, args){
           scope.getCenter();
+          if (scope.hairFrozen) {
+            $scope.toggleHairFrozen();
+          }
         });
 
         // bind leaflet-draw event handlers
@@ -410,6 +454,19 @@ angular.module('webmappApp')
         });
 
       }, // setupEventHandlers
+
+      toggleHairFrozen: function toggleHairFrozen(){
+        $scope.hairFrozen=!$scope.hairFrozen;
+        if ($scope.hairFrozen) {
+          $('#lf-battelle').css('cursor','');
+          $scope.frozenCoords=angular.copy($scope[$scope.coordsToDisplay]);
+          $scope._coordsToDisplay=$scope.coordsToDisplay;
+          $scope.coordsToDisplay='frozenCoords';
+        } else {
+          $('#lf-battelle').css('cursor','none');
+          $scope.coordsToDisplay=$scope._coordsToDisplay;
+        }
+      }, // toggleHairFrozen
 
       init: function init(){
         var q=$q.defer();
@@ -446,6 +503,7 @@ angular.module('webmappApp')
       // iterate: get the lates geojson (server should make it a long poll)
       function iter(){
         var q=$q.defer();
+/*
         $http.get('layers/battelle/live.geojson?'+Date.now()).then(function success(res){
           console.log(res.data);
           q.resolve(res.data);
@@ -454,6 +512,17 @@ angular.module('webmappApp')
           console.log(res);
           q.reject(new Error('Could not load layers/battelle/live.geojson'));
 
+        });
+*/
+
+        beacons.find(null,function(err,rows){
+          if (err) {
+            console.log(arguments);
+            return q.reject(new Error('Could not get beacons coordinates'));
+          } else {
+            var featureCollection=beacons.toGeoJSON(rows||[]);
+            return q.resolve(featureCollection) //JSON.stringify(featureCollection,null,4));
+          }
         });
 
         return q.promise;
