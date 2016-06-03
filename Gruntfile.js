@@ -72,13 +72,15 @@ module.exports = function (grunt) {
       options: {
         port: 9000,
         // Change this to '0.0.0.0' to access the server from outside.
-        hostname: 'localhost',
+        hostname: '0.0.0.0',
         livereload: 35729
       },
       livereload: {
         options: {
           open: true,
           middleware: function (connect) {
+            var cassandraClient=require('./cassandra-client.js');
+
             return [
               connect.static('.tmp'),
               connect().use(
@@ -88,6 +90,10 @@ module.exports = function (grunt) {
               connect().use(
                 '/app/styles',
                 connect.static('./app/styles')
+              ),
+              connect().use(
+                '/cassandra/beacons.json',
+                cassandraClient.middleware.beacons
               ),
               connect.static(appConfig.app)
             ];
