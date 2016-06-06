@@ -470,6 +470,8 @@ angular.module('webmappApp')
 
       labels: {},
 
+      labels_visible: true,
+
       geojson: {
         style: {
             fillColor: "green",
@@ -484,7 +486,7 @@ angular.module('webmappApp')
           noHide: true
         },
 
-        _onEachFeature: function geojson_onEachFeature(feature, layer) {
+        onEachFeature: function geojson_onEachFeature(feature, layer) {
           // create or re-use label
           var shortname=feature.properties.description;
           if (!layer.label) {
@@ -520,11 +522,51 @@ angular.module('webmappApp')
           var label=$scope.labels[shortname];
           if (label) {
             if ($scope.map.hasLayer(label)) {
-              $scope.map.removeLabel(label);
+              $scope.map.removeLayer(label);
             }
           }
         });
       }, // removeExtraLabels
+
+      updateSearchString: function updateSearchString(options) {
+        var val=options.val;
+        if (val!=$scope.searchString) {
+          $scope.searchString=val;
+          $scope.updateGeoJSON($scope.rows,$scope.searchString);
+        }
+      }, // onsearch
+
+      updateGeoJSON: function updateGeoJSON(rows,searchString) {
+        rows=rows||[];
+        if (searchString) {
+          rows=$scope.filterRows(rows,$scope.searchString);
+        }
+        var geojson=beacons.toGeoJSON(rows);
+        $scope.removeExtraLabels(geojson.features);
+        $scope.geojson.data=geojson;
+
+      }, // updateGeoJSON
+
+      filterRows: function filterGeoJSON(rows,searchString){
+        var result=[];
+        var str=searchString.toLowerCase().split(' ');
+
+        rows.forEach(function(row, row_index){
+          var mismatch=0;
+          str.forEach(function(s){
+            if (s.length) {
+              ++mismatch;
+              if (row.shortname.toLowerCase().match(s)) {
+                --mismatch;
+              }
+            }
+          });
+          if (mismatch==0) {
+            result.push(row);
+          }
+        });
+        return result;
+      }, // filterGeoJSON
 
       init: function init(){
         var q=$q.defer();
@@ -557,8 +599,8 @@ angular.module('webmappApp')
             console.log(arguments);
             return q.reject(new Error('Could not get beacons coordinates'));
           } else {
-            var featureCollection=beacons.toGeoJSON(rows||[]);
-            return q.resolve(featureCollection);
+            $scope.rows=rows;
+            return q.resolve(rows);
           }
         });
 
@@ -567,10 +609,8 @@ angular.module('webmappApp')
 
       // infinite loop: iterate indefinitely
       function loop() {
-        iter().then(function(data){
-
-          $scope.removeExtraLabels(data.features);
-          $scope.geojson.data=data;
+        iter().then(function(rows){
+          $scope.updateGeoJSON(rows,$scope.searchString);
 
           $timeout(function(){
               loop();

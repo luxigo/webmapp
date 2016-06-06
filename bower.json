@@ -22,7 +22,8 @@
     "shp": "^3.3.2",
     "Leaflet.EasyButton": "^1.2.0",
     "requirejs": "^2.2.0",
-    "Leaflet.label": "^0.2.1"
+    "Leaflet.label": "^0.2.1",
+    "es5-shim": "^4.5.8"
   },
   "devDependencies": {
     "angular-mocks": "^1.4.0"
@@ -38,10 +39,10 @@
       ]
     },
     "Leaflet.label": {
-        "main" : [
-          " dist/leaflet.label-src.js",
-          "dist/leaflet.label.css"
-        ]
+      "main": [
+        " dist/leaflet.label-src.js",
+        "dist/leaflet.label.css"
+      ]
     }
   }
 }

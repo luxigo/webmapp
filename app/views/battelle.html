@@ -1,4 +1,5 @@
 <div id="battelle" ng-cloak>
+  <search onsearch="updateSearchString({val:val})" delay="0" />
   <div id="crosshair-h" class="hair"></div>
   <div id="crosshair-v" class="hair"></div>
   <leaflet ng-if="layers.overlays" geojson="geojson" id="lf-battelle" lf-center="center" layers="layers" controls="controls" lf-draw="drawOptions" event-broadcast="events" url-hash-center="yes" width="100%" height="100%"></leaflet>

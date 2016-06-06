@@ -58,6 +58,16 @@ div#battelle {
     z-index: 999;
   }
 
+   search {
+    position: absolute;
+    top: 10px;
+    width: 100%;
 
+    .custom-search-input {
+      width: 20%;
+      margin-left: auto;
+      margin-right: auto;
+    }
 
+  }
 }

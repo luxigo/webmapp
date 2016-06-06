@@ -20,6 +20,7 @@ module.exports = function(config) {
     // list of files / patterns to load in the browser
     files: [
       // bower:js
+      'bower_components/es5-shim/es5-shim.js',
       'bower_components/jquery/dist/jquery.js',
       'bower_components/angular/angular.js',
       'bower_components/bootstrap-sass-official/assets/javascripts/bootstrap.js',
@@ -46,6 +47,7 @@ module.exports = function(config) {
       'bower_components/shp/dist/shp.js',
       'bower_components/Leaflet.EasyButton/src/easy-button.js',
       'bower_components/requirejs/require.js',
+      'bower_components/Leaflet.label/dist/leaflet.label-src.js',
       'bower_components/angular-mocks/angular-mocks.js',
       // endbower
       'app/scripts/**/*.js',
