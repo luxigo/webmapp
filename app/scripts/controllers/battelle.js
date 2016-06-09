@@ -67,7 +67,7 @@ angular.module('webmappApp')
     $(document).on('keydown',function(e){
       console.log(e.keyCode);
       switch(e.keyCode) {
-        case 88:
+        case 88: // 'x'
           $scope.toggleHairFrozen();
           break;
       }
@@ -234,7 +234,7 @@ angular.module('webmappApp')
             }]
           }),
 //        L.control.locate({follow: true}),
-          L.easyButton({
+          $scope.originButton=L.easyButton({
             states: [{
               title: 'Set beacons coordinates origin',
               icon: 'fa-circle-o -fa-lg',
@@ -249,7 +249,7 @@ angular.module('webmappApp')
             }]
           }),
 
-          L.easyButton({
+          $scope.axisButton=L.easyButton({
             states: [{
               title: 'Set vertical axis from origin',
               icon: 'fa-dot-circle-o -fa-lg',
@@ -273,16 +273,28 @@ angular.module('webmappApp')
                 var hair=$('.hair');
                 $scope.hairFrozen=false;
                 $scope.coordsToDisplay="mouseCoords";
+
                 if (hair.is(':visible')) {
                   hair.hide(0);
                   $('#mousecoords').hide();
                   $scope.hairVisible=false;
+                  if (typeof($scope.crosshairOffMousedown)=='function') {
+                    $scope.crosshairOffMousedown();
+                  }
                   $('search').show(0);
                   $('#lf-battelle').css('cursor','');
+
+                  $scope.originButton.disable();
+                  $scope.axisButton.disable();
+
                 } else {
                   hair.show(0);
                   $('#mousecoords').show();
                   $scope.hairVisible=true;
+                  $scope.crosshairOffMousedown=$scope.$on('leafletDirectiveMap.lf-battelle.mousedown', function(event, args){
+                    $scope.leafletEvent=args.leafletEvent;
+                    $scope.toggleHairFrozen();
+                  });
                   $('search').hide(0);
                   $('#lf-battelle').css('cursor','none');
                 }
@@ -464,9 +476,13 @@ angular.module('webmappApp')
           $scope.frozenCoords=angular.copy($scope[$scope.coordsToDisplay]);
           $scope._coordsToDisplay=$scope.coordsToDisplay;
           $scope.coordsToDisplay='frozenCoords';
+          $scope.originButton.enable();
+          $scope.axisButton.enable();
         } else {
           $('#lf-battelle').css('cursor','none');
           $scope.coordsToDisplay=$scope._coordsToDisplay;
+          $scope.originButton.disable();
+          $scope.axisButton.disable();
         }
       }, // toggleHairFrozen
 
@@ -574,6 +590,8 @@ angular.module('webmappApp')
         var q=$q.defer();
 
         $scope.saveButton.disable();
+        $scope.originButton.disable();
+        $scope.axisButton.disable();
 
         $scope.loadLayers().then(function success(){
           $scope.setupEventHandlers();
