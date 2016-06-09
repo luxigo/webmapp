@@ -240,11 +240,12 @@ angular.module('webmappApp')
               icon: 'fa-circle-o -fa-lg',
               onClick: function(btn, map) {
                 if (!$scope.hairFrozen) {
-                  alert('Select a place with the crosshairs, then press X to freeze the crosshairs and click this button to set the origin.');
+                  alert('Unexpected error');
                   return;
                 }
                 beacons.geolocation.origin=angular.copy($scope.frozenCoords.LV95);
                 beacons.updateAxis();
+                $scope.toggleHairFrozen();
               }
             }]
           }),
@@ -255,11 +256,12 @@ angular.module('webmappApp')
               icon: 'fa-dot-circle-o -fa-lg',
               onClick: function(btn, map) {
                 if (!$scope.hairFrozen) {
-                  alert('Select a place with the crosshairs, then press X to freeze the crosshairs and click this button to set the vertical axis (from the origin).');
+                  alert('Unexpected error');
                   return;
                 }
                 beacons.geolocation.downVector=angular.copy($scope.frozenCoords.LV95);
                 beacons.updateAxis();
+                $scope.toggleHairFrozen();
 
               }
             }]
@@ -270,40 +272,63 @@ angular.module('webmappApp')
               title: 'Toggle crosshair',
               icon: 'fa-crosshairs fa-lg',
               onClick: function(btn, map) {
-                var hair=$('.hair');
-                $scope.hairFrozen=false;
-                $scope.coordsToDisplay="mouseCoords";
-
-                if (hair.is(':visible')) {
-                  hair.hide(0);
-                  $('#mousecoords').hide();
-                  $scope.hairVisible=false;
-                  if (typeof($scope.crosshairOffMousedown)=='function') {
-                    $scope.crosshairOffMousedown();
-                  }
-                  $('search').show(0);
-                  $('#lf-battelle').css('cursor','');
-
-                  $scope.originButton.disable();
-                  $scope.axisButton.disable();
-
-                } else {
-                  hair.show(0);
-                  $('#mousecoords').show();
-                  $scope.hairVisible=true;
-                  $scope.crosshairOffMousedown=$scope.$on('leafletDirectiveMap.lf-battelle.mousedown', function(event, args){
-                    $scope.leafletEvent=args.leafletEvent;
-                    $scope.toggleHairFrozen();
-                  });
-                  $('search').hide(0);
-                  $('#lf-battelle').css('cursor','none');
-                }
+                $scope.toggleCrosshair();
               }
             }]
           })
         ]
 
       }, // controls
+
+      toggleCrosshair: function toggleCrosshair(){
+        var hair=$('.hair');
+        $scope.hairFrozen=false;
+        $scope.coordsToDisplay="mouseCoords";
+
+        if (hair.is(':visible')) {
+          // hide crosshairs and coordinates
+          hair.hide(0);
+          $('#mousecoords').hide();
+          $scope.hairVisible=false;
+
+          // unregister mousedown handler
+          if (typeof($scope.crosshairOffMousedown)=='function') {
+            $scope.crosshairOffMousedown();
+          }
+
+          // show search box and cursor
+          $('search').show(0);
+          $('#lf-battelle').css('cursor','');
+
+          // update buttons
+          $scope.originButton.disable();
+          $scope.axisButton.disable();
+
+        } else {
+          // show crosshairs and coordinates
+          hair.show(0);
+          $('#mousecoords').show();
+          $scope.hairVisible=true;
+
+          // toggle hairfrozen mode on mousedown
+          $scope.crosshairOffMousedown=$scope.$on('leafletDirectiveMap.lf-battelle.mousedown', function(event, args){
+            $scope.leafletEvent=args.leafletEvent;
+            // dont toggle hairfrozen when hairdown is explicitly disabled
+            if ($scope.disableHairdown) {
+              return;
+            }
+            // dont toggle hairfrozen mode when mousedown occurs over controls
+            if ($($scope.leafletEvent.originalEvent.target).closest('.leaflet-control').length) {
+              return;
+            }
+            $scope.toggleHairFrozen();
+          });
+
+          // hide search box and cursor
+          $('search').hide(0);
+          $('#lf-battelle').css('cursor','none');
+        }
+      }, // toggleCrosshair
 
       // ui-leaflet-draw options
       drawOptions: {
@@ -351,12 +376,24 @@ angular.module('webmappApp')
           $scope.drawnItems.removeLayer(leafletEvent.layers);
           $scope.updateObjectList();
         },
-        drawstart: function(arg) {},
-        drawstop: function(arg) {},
-        editstart: function(arg) {},
-        editstop: function(arg) {},
-        deletestart: function(arg) {},
-        deletestop: function(arg) {}
+        drawstart: function(arg) {
+          $scope.disableHairdown=true;
+        },
+        drawstop: function(arg) {
+          $scope.disableHairdown=false;
+        },
+        editstart: function(arg) {
+          $scope.disableHairdown=true;
+        },
+        editstop: function(arg) {
+          $scope.disableHairdown=false;
+        },
+        deletestart: function(arg) {
+          $scope.disableHairdown=true;
+        },
+        deletestop: function(arg) {
+          $scope.disableHairdown=false;
+        }
 
       }, // drawEventHandlers
 
