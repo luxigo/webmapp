@@ -16,7 +16,7 @@ angular.module('webmappApp')
         onsearch: '&'
       },
       link: function postLink(scope, element, attrs) {
-        element.on('keyup',function(e){
+        element.on('keyup','input',function(e){
           $timeout.cancel(scope._keyupTimeout);
           if (e.keyCode==27) {
             $(e.target).val('');
