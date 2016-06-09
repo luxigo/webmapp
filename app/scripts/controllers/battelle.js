@@ -277,11 +277,13 @@ angular.module('webmappApp')
                   hair.hide(0);
                   $('#mousecoords').hide();
                   $scope.hairVisible=false;
+                  $('search').show(0);
                   $('#lf-battelle').css('cursor','');
                 } else {
                   hair.show(0);
                   $('#mousecoords').show();
                   $scope.hairVisible=true;
+                  $('search').hide(0);
                   $('#lf-battelle').css('cursor','none');
                 }
               }
