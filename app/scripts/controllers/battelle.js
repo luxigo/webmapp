@@ -48,7 +48,7 @@ angular.module('webmappApp')
     ];
 
     $timeout(function(){
-      $scope.map=leafletData.getMap();
+      $scope.map=leafletData.getMap('lf-battelle');
       $scope.map.then(function(map){
         $scope.map=map;
       });
