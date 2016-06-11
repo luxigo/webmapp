@@ -51,10 +51,18 @@ angular.module('webmappApp')
       $scope.map=leafletData.getMap('lf-battelle');
       $scope.map.then(function(map){
         $scope.map=map;
+        $scope.map.on('overlayremove',function(e){
+          var layerName=e.name;
+          $('.label-'+layerName).hide(0);
+        });
+        $scope.map.on('overlayadd',function(e){
+          var layerName=e.name;
+          $('.label-'+layerName).show(0);
+        });
       });
     },1000);
 
-
+    // setup crosshair
     var cH = $('#crosshair-h');
     var cV = $('#crosshair-v');
     $(document).on('mousemove',function(e){
@@ -123,12 +131,15 @@ angular.module('webmappApp')
         var layers={};
         var todo=0;
 
+        // get layers count
         angular.forEach(res.data,function(layer,layerName){
           ++todo;
         });
 
         var q=$q.defer();
 
+        // we need to wait for all layers initialized before
+        // passing the layers object to ui-leaflet
         function doneOne(){
           --todo;
           if (!todo) {
@@ -136,12 +147,14 @@ angular.module('webmappApp')
           }
         }
 
+        // loop through layers.json layers
         angular.forEach(res.data,function(layer,layerName){
           var layerClass;
 
           if (layer.baseLayer) {
             layerClass='baselayers';
 
+            // use first visible base layer center to center map
             if (!center && layer.visible) {
               var coords=proj4(layer.projection,'WGS84',layer.center);
               center={
@@ -155,26 +168,71 @@ angular.module('webmappApp')
             layerClass='overlays';
           }
 
+          // get list of layers for current layer class (baselayers or overlays)
           var list=layers[layerClass];
           if (!list) {
             list=layers[layerClass]={};
           }
 
           if (layer.type=='geoJSONShape') {
-            $http.get(pathname+layer.url).then(function(res){
-              list[layerName]={
-                name: layer.description || layerName,
-                type: layer.type,
-                data: res.data,
-                visible: layer.visible || false,
-                layerParams: layer.options || {}
-              };
+            var layerURL=(layer.url.substr(0,1)=='/')?layer.url:pathname+layer.url;
+
+            // get layer url
+            $http.get(layerURL).then(function(res){
+              var q=$q.defer();
+
+              // is it a custom geojson layer for which an onload method is defined ?
+              if (layer.class && $scope[layer.class] && $scope[layer.class].onload) {
+
+                // prepare custom geojson layer
+                layer.name=layerName;
+                layer.scope=$scope;
+                layer.options={
+                  onEachFeature: $scope.geojson.onEachFeature,
+                  layerName: layerName
+                };
+
+                $scope[layer.class].onload(layer,res,function(err,res){
+                  if (err) {
+                    // custom geojson prepare failed
+                    q.reject(err);
+                  } else {
+                    // custom geojson prepare success
+                    q.resolve(res);
+                  }
+                });
+
+              } else {
+                // pass the standard geojson layer further
+                q.resolve(res);
+              }
+
+              q.promise.then(function(res){
+                // define the ui-leaflet geojson layer
+                list[layerName]={
+                  name: layerName,
+                  description: layer.description,
+                  type: layer.type,
+                  data: res.data,
+                  visible: layer.visible || false,
+                  layerParams: layer.options || {}
+                };
+                doneOne();
+
+              },function(err){
+                // custom geojson layer prepare failed
+                doneOne();
+              });
+
+            },function(err){
+              // http get failed
               doneOne();
             });
 
           } else {
             list[layerName]={
-              name: layer.description || layerName,
+              name: layerName,
+              description: layer.description,
               url: pathname+layer.url,
               type: layer.type,
               visible: layer.visible || false,
@@ -243,6 +301,8 @@ angular.module('webmappApp')
                   alert('Unexpected error');
                   return;
                 }
+                // TODO: axis buttons must be enabled only when a single layer with "localsystem" is displayed
+                // and this layer.localsystem.origin must be updated
                 beacons.geolocation.origin=angular.copy($scope.frozenCoords.LV95);
                 beacons.updateAxis();
                 $scope.toggleHairFrozen();
@@ -309,6 +369,7 @@ angular.module('webmappApp')
           hair.show(0);
           $('#mousecoords').show();
           $scope.hairVisible=true;
+          $scope.disableHairdown=false;
 
           // toggle hairfrozen mode on mousedown
           $scope.crosshairOffMousedown=$scope.$on('leafletDirectiveMap.lf-battelle.mousedown', function(event, args){
@@ -332,6 +393,7 @@ angular.module('webmappApp')
 
       // ui-leaflet-draw options
       drawOptions: {
+          enabled: false,
           draw: {
               polyline: {
                 metric: false
@@ -537,74 +599,133 @@ angular.module('webmappApp')
             fillOpacity: 0.7
         },
 
-        labelOptions: {
-          noHide: true
-        },
-
         onEachFeature: function geojson_onEachFeature(feature, layer) {
           // create or re-use label
           var shortname=feature.properties.description;
+
+          // feature has no label yet ?
           if (!layer.label) {
-            if ($scope.labels && $scope.labels[shortname]) {
-              layer.label=$scope.labels[shortname];
+            // label id
+            var id=feature.properties.layerName+'.'+shortname;
+
+            // is there an existing label for this feature ?
+            if ($scope.labels && $scope.labels[id]) {
+              // reuse existing label
+              layer.label=$scope.labels[id];
+
             } else {
-              $scope.labels[shortname] = layer.label = new L.Label({
-                className: 'beacon'
+              // create a new label
+              $scope.labels[id] = layer.label = new L.Label({
+                className: 'label-'+feature.properties.layerName
               }, layer);
+              layer.label.setContent(shortname);
+              // show label
+              if ($scope.labels_visible) {
+                $timeout(function(){
+                  layer && layer._showLabel(feature.properties);
+                },1);
+              }
       		  }
           }
-
-          layer.label.setContent(shortname);
-
-          if ($scope.labels_visible) {
-            $timeout(function(){
-              layer._showLabel(feature.properties);
-            },1);
-          }
         }
-
       },
-
-      removeExtraLabels: function removeExtraLabels(features){
-        // remove extra labels
-        var shortnames=Object.keys($scope.labels);
-        angular.forEach(features,function(feature){
-            var shortname=feature.properties.description;
-            var pos=shortnames.indexOf(shortname);
-            if (pos>=0) shortnames.splice(pos,1);
-        });
-        angular.forEach(shortnames,function(shortname){
-          var label=$scope.labels[shortname];
-          if (label) {
-            if ($scope.map.hasLayer(label)) {
-              $scope.map.removeLayer(label);
-            }
-          }
-        });
-      }, // removeExtraLabels
 
       updateSearchString: function updateSearchString(options) {
         var val=options.val;
         if (val!=$scope.searchString) {
           $scope.searchString=val;
-          $scope.updateGeoJSON($scope.rows,$scope.searchString);
+          $scope.$emit('updateSearchString');
+      //    $scope.updateGeoJSON(layer,$scope.searchString);
         }
       }, // onsearch
 
-      updateGeoJSON: function updateGeoJSON(rows,searchString) {
-        rows=rows||[];
-        if (searchString) {
-          rows=$scope.filterRows(rows,$scope.searchString);
+      getGeoJSONLayer: function getGeoJSONLayer(layerName) {
+        var fg_layer;
+        $scope.map.eachLayer(function(lf_layer){
+          if (!fg_layer &&
+            lf_layer._layers &&
+            lf_layer.options &&
+            lf_layer.options.layerName==layerName
+          ) {
+            fg_layer=lf_layer;
+            return false;
+          }
+        });
+        return fg_layer;
+
+      }, // getGeoJSONLayer
+
+      updateGeoJSON: function updateGeoJSON(layer) {
+        // filter layer items according to searchString
+        var rows=layer.data.rows||{};
+        layer.rows=$scope.filterRows(rows,$scope.searchString);
+
+        // get filtered geojson
+        layer.geojson=beacons.toGeoJSON(layer);
+
+        // get feature group layer
+        var fg_layer=$scope.getGeoJSONLayer(layer.name);
+
+        // layer displayed ?
+        if (!fg_layer) {
+          return;
         }
-        var geojson=beacons.toGeoJSON(rows);
-        $scope.removeExtraLabels(geojson.features);
-        $scope.geojson.data=geojson;
+
+        // get feature names list and build features table indexed on feature name
+        var features={};
+        var featureNames=[];
+        layer.geojson.features.forEach(function(feature){
+          var name=feature.properties.description;
+          featureNames.push(name);
+          features[name]=feature;
+        });
+
+        // browse displayed features
+        fg_layer.eachLayer(function(l){
+          var hasMoved;
+          var name=l.feature.properties.description;
+          var fi=featureNames.indexOf(name);
+
+          // feature must be displayed ?
+          if (fi>=0) {
+            // check if it did move
+            var latlng0=l.feature.properties.latlng;
+            var latlng1=features[name];
+            hasMoved=latlng0.lat!=latlng1.lat || latlnt0.lng!=latlng1.lng;
+          }
+
+          // not to be displayed or moved ?
+          if (fi<0 || hasMoved) {
+            fg_layer.removeLayer(l);
+
+            // not to be displayed ?
+            // remove label as well
+            if (fi<0) {
+              var id=l.feature.properties.layerName+'.'+name;
+              $scope.map.removeLayer($scope.labels[id]);
+              delete $scope.labels[id];
+            }
+
+          } else {
+            // already displayed and did not move,
+            // we dont want to add it in the next loop
+            featureNames.splice(fi,1);
+          }
+        });
+
+        // add new or moved features
+        layer.geojson.features.forEach(function(feature){
+          if (featureNames.indexOf(feature.properties.description)>=0) {
+            fg_layer.addData(feature);
+          }
+        });
 
       }, // updateGeoJSON
 
-      filterRows: function filterGeoJSON(rows,searchString){
+      // return rows matching every substrings of searchString
+      filterRows: function filterRows(rows,searchString){
         var result=[];
-        var str=searchString.toLowerCase().split(' ');
+        var str=(searchString||'').toLowerCase().split(' ');
 
         rows.forEach(function(row, row_index){
           var mismatch=0;
@@ -621,7 +742,21 @@ angular.module('webmappApp')
           }
         });
         return result;
+
       }, // filterGeoJSON
+
+      // hide unwanted controls
+      updateControls: function updateControls(){
+        $timeout(function(){
+          var setDrawButtonsVisibility=$scope.drawOptions.enabled?'show':'hide';
+          $('.leaflet-control.leaflet-draw')[setDrawButtonsVisibility](0);
+          $('.fa-save').closest('.leaflet-control')[setDrawButtonsVisibility](0);
+
+          var setAxisButtonsVisibility=$scope.axisButtonsVisible?'show':'hide';
+          $('.fa-circle-o, .fa-dot-circle-o').closest('.leaflet-control')[setAxisButtonsVisibility](0);
+
+        });
+      }, // updateControls
 
       init: function init(){
         var q=$q.defer();
@@ -629,6 +764,8 @@ angular.module('webmappApp')
         $scope.saveButton.disable();
         $scope.originButton.disable();
         $scope.axisButton.disable();
+
+        $scope.beacons=beacons;
 
         $scope.loadLayers().then(function success(){
           $scope.setupEventHandlers();
@@ -644,44 +781,8 @@ angular.module('webmappApp')
 
     });
 
-
     $scope.init().then(function(){
-
-      // iterate: get the lates geojson (server should make it a long poll)
-      function iter(){
-        var q=$q.defer();
-
-        beacons.find(null,function(err,rows){
-          if (err) {
-            console.log(arguments);
-            return q.reject(new Error('Could not get beacons coordinates'));
-          } else {
-            $scope.rows=rows;
-            return q.resolve(rows);
-          }
-        });
-
-        return q.promise;
-      } // iter
-
-      // infinite loop: iterate indefinitely
-      function loop() {
-        iter().then(function(rows){
-          $scope.updateGeoJSON(rows,$scope.searchString);
-
-          $timeout(function(){
-              loop();
-          },5000);
-
-        }, function fail(err) {
-          notify.message(err.message);
-          $timeout(function(){
-            loop();
-          },5000);
-        });
-      } // loop
-
-      loop();
+      $scope.updateControls();
 
     });
 

@@ -39,6 +39,7 @@ div#battelle {
   }
   .wrapper {
     position: fixed;
+    z-index: 1000;
     top: 4px;
     width: 100%;
     #mousecoords {

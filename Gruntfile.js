@@ -25,6 +25,8 @@ module.exports = function (grunt) {
     dist: 'dist'
   };
 
+  grunt.option('stack',true);
+
   // Define the configuration for all the tasks
   grunt.initConfig({
 
@@ -92,8 +94,8 @@ module.exports = function (grunt) {
                 connect.static('./app/styles')
               ),
               connect().use(
-                '/cassandra/beacons.json',
-                cassandraClient.middleware.beacons
+                '/cassandra/find',
+                cassandraClient.middleware.find
               ),
               connect.static(appConfig.app)
             ];

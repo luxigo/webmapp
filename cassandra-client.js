@@ -15,23 +15,58 @@ module.exports=(function(){
   });
 
   /**
-  @function getBeacons
-   Get beacons list
+  @function find
+   Get select
   @param callback {function} callback(err,result)
   @param req {object} request
   @param res {object} response
   @param next {function} next middleware
   */
-  function getBeacons(callback,req,res,next){
-    var query='SELECT shortname,x,y FROM repoble.currentxy';
-    console.log(req.params);
-    if (req.params && req.params.filter && req.params.filter.match(/^[a-zA-Z0-9]+$/)) {
-      query+=" WHERE shortname CONTAINS '"+req.params.contains+"'"
-      + " ALLOW FILTERING"
-      + ";";
-    } else {
-      query+=';';
+
+  function find(callback,req,res,next){
+    var model;
+    var filter={
+    };
+
+    if (req.params) {
+      model=req.params.model;
+      if (req.params.filter) {
+        filter=JSON.parse(req.params.filter)||{};
+      }
     }
+
+    if (!model || !model.match(/^[a-zA-Z0-9_\.]+$/)) {
+      throw 'Invalid model name: '+model;
+    }
+
+    var fields=[];
+    if (filter.fields) {
+      if (Array.isArray(filter.fields)) {
+        filter.fields.forEach(function(name){
+          if (!name.match(/^[a-zA-Z0-9_]+$/)) {
+            throw 'Invalid field name: '+name;
+          }
+          fields.push(name);
+        });
+
+      } else {
+        var _filter_fields=filter.fields;
+        for (name in _filter_fields) {
+          if (_filter_fields.hasOwnProperty(name)){
+            if (!name.match(/^[a-zA-Z0-9_]+$/)) {
+              throw 'Invalid field name: '+name;
+            }
+            fields.push(name);
+          }
+        }
+      }
+    }
+
+    if (!fields.length) {
+      fields.push('*');
+    }
+
+    var query='SELECT '+fields.join(',')+' FROM '+model;
     client.execute(query,callback);
   }
 
@@ -88,7 +123,7 @@ module.exports=(function(){
   // module exports
   return {
     middleware: {
-      beacons: _wrap(getBeacons)
+      find: _wrap(find)
     }
 
   }
