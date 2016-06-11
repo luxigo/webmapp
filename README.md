@@ -51,6 +51,27 @@ The actual layers.json file format is:
     ...
 }
 ```
+Dynamic geojson overlay example:
+
+```
+    "beacons": {
+      "description": "Beacons, filtered",
+      "baseLayer": false,
+      "visible": true,
+      "type": "geoJSONShape",
+      "projection": "WGS84",
+      "url": "/cassandra/find?model=repoble.currentxy&filter={\"fields\": [\"shortname\",\"x\",\"y\"]}",
+      "refresh": "1000",
+      "class": "beacons",
+      "localsystem": {
+        "proj": "EPSG:2056",
+        "origin": [ 2499670.90206156, 1114753.42399633 ],
+        "downVector": [ 2499680.14609066, 1114764.71805181 ]
+      },
+      "options": {
+      }
+    },
+```
   
   
 # Development
