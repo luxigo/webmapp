@@ -49,9 +49,13 @@ angular.module('webmappApp')
     // side size (in localsystem.proj unit) at the given
     // center (in localsystem.proj coordinates)
     function geojson_square_coordinates(layer,center,size){
+      var localSystem=beacons.getLocalSystem(layer);
+      if (localSystem.downVectorLength) {
+        size*=localSystem.scale;
+      }
       size/=2;
       var coordinates=[];
-
+      var proj=localSystem.proj;
       angular.forEach([
         [center[0]-size,center[1]-size],
         [center[0]+size,center[1]-size],
@@ -59,34 +63,64 @@ angular.module('webmappApp')
         [center[0]-size,center[1]+size],
         [center[0]-size,center[1]-size],
       ], function(coords){
-        coordinates.push(proj4(layer.localsystem.proj,'WGS84',coords));
+        if (proj) {
+          coordinates.push(proj4(proj,'WGS84',coords));
+        } else {
+          coordinates.push(coords);
+        }
       });
-
       return coordinates;
     } // geojson_square_coordinates
 
     angular.extend(beacons,{
       http_origin: document.location.origin,
 
+      getLocalSystem: function beacons_getLocalSystem(layer){
+        var baselayer=layer.scope.getCurrentLayer();
+        return layer.localsystem && layer.localsystem[baselayer._name];
+      }, // getLocalSystem
+
       updateAxis: function beacons_updateAxis(layer){
-        layer.localsystem.axis={};
+        for (var name in layer.localsystem) {
+          var localsystem=layer.localsystem[name];
+          localsystem.axis={};
 
-        // vector for vertical axis
-        var u=layer.localsystem.axis.Y=[
-          layer.localsystem.downVector[0]-layer.localsystem.origin[0],
-          layer.localsystem.downVector[1]-layer.localsystem.origin[1]
-        ];
+          // vector for vertical axis
+          var u=localsystem.axis.Y=[
+            localsystem.downVector[0]-localsystem.origin[0],
+            localsystem.downVector[1]-localsystem.origin[1]
+          ];
 
-        // unit vector for vertical axis
-        var norm=Math.sqrt(u[0]*u[0]+u[1]*u[1]);
-        u[0]/=norm;
-        u[1]/=norm;
+          // unit vector for vertical axis
+          var distance=localsystem.downVectorLength||Math.sqrt(u[0]*u[0]+u[1]*u[1]);
+          u[0]/=distance;
+          u[1]/=distance;
 
-        // unit vector for horizontal axis (orthogonal to Y, rotated counter-clockwise)
-        var v=layer.localsystem.axis.X=[
-          u[1],
-          -u[0]
-        ];
+          // one meter in pixels
+          localsystem.scale=Math.sqrt(u[0]*u[0]+u[1]*u[1]);
+
+          // unit vector for horizontal axis (orthogonal to Y, rotated counter-clockwise)
+          var v=localsystem.axis.X=[
+            u[1],
+            -u[0]
+          ];
+
+          if (localsystem.invertYaxis) {
+            u[0]=-u[0];
+            u[1]=-u[1];
+          }
+
+          if (localsystem.invertXaxis) {
+            v[0]=-v[0];
+            v[1]=-v[1];
+          }
+
+          if (localsystem.switchAxis) {
+            localsystem.axis.X=u;
+            localsystem.axis.Y=v;
+          }
+
+        }
       }, // beacon_updateAxis
 
       polygonSize: 0.5,
@@ -113,11 +147,17 @@ angular.module('webmappApp')
           layer.scope.$on('updateSearchString',function(){
               layer.scope.updateGeoJSON(layer);
           });
-          /*
-          layer.scope.map.on('overlayadd',function(e){
-            $scope.onOverlayAdd(layer,e);
+
+          layer.scope.$on('baseLayerChanged',function(){
+            var fg_layer=layer.scope.getGeoJSONLayer(layer.name);
+            if (fg_layer) {
+              fg_layer.clearLayers();
+              layer.scope.labels={};
+            }
+            $timeout(function(){
+              layer.scope.updateGeoJSON(layer);
+            });
           });
-          */
 
           // setup refresh loop
           if (layer.refresh) {
@@ -150,13 +190,23 @@ angular.module('webmappApp')
             console.log(layer.url,res.data.error);
             return q.reject(new Error(res.data.error));
           } else {
+
             // for testing
             if (false)  {
               res.data.rows.forEach(function(row){
-                row.x=Number(row.x)+(Math.random()-0.5)*0.2;
-                row.y=Number(row.y)+(Math.random()-0.5)*0.2;
-                console.log(row);
+                row.x=Number(row.x)+(Math.random()-0.5)*4.2;
+                row.y=Number(row.y)+(Math.random()-0.5)*4.2;
+//                console.log(row);
               });
+              res.data.rows.push({x:0, y:0, shortname: 'zero'});
+              res.data.rows.push({x:0, y:10, shortname: 'zeroten'});
+              res.data.rows.push({x:10, y:10, shortname: 'tenten'});
+              res.data.rows.push({x:18, y:10, shortname: 'tenten'});
+              res.data.rows.push({x:18, y:0, shortname: 'tenten'});
+              res.data.rows.push({x:12, y:0, shortname: 'tenten'});
+              res.data.rows.push({x:6, y:0, shortname: 'tenten'});
+              res.data.rows.push({x:0, y:5, shortname: 'tenten'});
+              res.data.rows.push({x:9, y:5, shortname: 'tenten'});
             }
             return q.resolve(res);
           }
@@ -173,7 +223,6 @@ angular.module('webmappApp')
         beacons.iter(layer).then(function(res){
           if (res) {
             layer.data=res.data;
-            layer.geojson=beacons.toGeoJSON(layer);
             layer.scope.updateGeoJSON(layer);
           }
           $timeout(function(){
@@ -190,14 +239,15 @@ angular.module('webmappApp')
 
       // return feature collection geojson for given layer
       toGeoJSON: function beacons_toGeoJSON(layer){
-        if (!layer.localsystem.axis) {
+        var localsystem=beacons.getLocalSystem(layer);
+        if (!localsystem.axis) {
           return {};
         };
 
         // get local coordinates system world axis origin and unit vectors
-        var u=layer.localsystem.axis.X;
-        var v=layer.localsystem.axis.Y;
-        var origin=layer.localsystem.origin;
+        var u=localsystem.axis.X;
+        var v=localsystem.axis.Y;
+        var origin=localsystem.origin;
 
         // generate geojson features list
         var features=[];
@@ -215,12 +265,17 @@ angular.module('webmappApp')
           // store world coordinates
           row.coords=coords;
 
-          // convert coordinates to WGS84
-          var wgs84=proj4(layer.localsystem.proj,'WGS84',coords);
-          var latlng={
-            lat: wgs84[1],
-            lng: wgs84[0]
-          };
+          var latlng;
+          if (localsystem.proj) {
+            // convert coordinates to WGS84
+            var wgs84=proj4(localsystem.proj,'WGS84',coords);
+            latlng={
+              lat: wgs84[1],
+              lng: wgs84[0]
+            };
+          }  else {
+            latlng=[coords[1],coords[0]];
+          }
 
           // add feature to list
           features.push({
@@ -228,10 +283,7 @@ angular.module('webmappApp')
             properties: {
               layerName: layer.name,
               description: row.shortname,
-              latlng: {
-                lat: wgs84[1],
-                lng: wgs84[0]
-              }
+              latlng: latlng
             },
             geometry: {
               type: "Polygon",

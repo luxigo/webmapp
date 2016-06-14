@@ -50,9 +50,11 @@ angular.module('webmappApp')
     $timeout(function(){
       $scope.map=leafletData.getMap('lf-battelle');
       $scope.map.then(function(map){
+        window.map=map;
+        map.scope=$scope;
         $scope.map=map;
         $scope.map.on('overlayremove',function(e){
-          var layerName=e.name;
+          var layerName=$scope.getLayerByName(e.name)._name;
           $('.label-'+layerName).hide(0);
         });
         $scope.map.on('overlayadd',function(e){
@@ -81,12 +83,6 @@ angular.module('webmappApp')
       }
     });
 
-    $scope.center={
-        lng: 6,
-        lat: 46,
-        zoom: 8
-    };
-
     $scope.drawnItems=new L.FeatureGroup();
 
     angular.extend($scope, {
@@ -96,6 +92,7 @@ angular.module('webmappApp')
         zoom: 8
       },
 
+      bounds: null,
       layers: {},
 
       // load layers if not done yet, an run initLayers()
@@ -124,11 +121,57 @@ angular.module('webmappApp')
 
       }, // loadLayers
 
+      defaults: {
+//        crs: 'Simple'
+      },
+
+      getLayerBounds: function getLayerBounds(layer){
+
+        if (layer.type=="imageOverlay") {
+          return layer.bounds;
+        }
+
+        if (layer.projection && layer.bounds) {
+          var tl=proj4(layer.projection,'WGS84',layer.bounds[0]);
+          var br=proj4(layer.projection,'WGS84',layer.bounds[1]);
+          return L.bounds([
+            [tl[1],tl[0]],
+            [br[1],br[0]]
+          ]);
+
+        } else {
+          if (layer.bounds) {
+            if (layer.bounds[0]) {
+              if (layer.bounds[0].lat) {
+                return L.bounds([
+                  [layer.bounds[0].lat, layer.bounds[0].lng],
+                  [layer.bounds[1].lat, layer.bounds[1].lng]
+                ]);
+              } else {
+                return L.bounds([
+                  [layer.bounds[0][0], layer.bounds[0][1]],
+                  [layer.bounds[1][0], layer.bounds[1][1]]
+                ]);
+              }
+            }
+          }
+        }
+      }, // getLayerBounds
+
+      getLayerCenter: function getLayerCenter(layer){
+        if (layer.projection && layer.center) {
+          var coords=proj4(layer.projection,'WGS84',layer.center);
+          return L.latLng(coords[1],coords[0]);
+
+        } else {
+          return L.latLng(0,0);
+        }
+      },
       // parse layers.json and initialize layers
       initLayers: function initLayers(res){
         var pathname=res.config.url.replace(/layers\.json.*/,'');
         var center;
-        var layers={};
+        var layers=$scope.__layers={};
         var todo=0;
 
         // get layers count
@@ -156,11 +199,17 @@ angular.module('webmappApp')
 
             // use first visible base layer center to center map
             if (!center && layer.visible) {
-              var coords=proj4(layer.projection,'WGS84',layer.center);
+              var coords=[0,0];
+              try {
+                coords=proj4(layer.projection,'WGS84',layer.center);
+              } catch(e) {
+                console.log(e);
+              }
+
               center={
                 lng: coords[0],
                 lat: coords[1],
-                zoom: (layer.options.minZoom!==undefined)?Math.floor(layer.options.minZoom+(layer.options.maxZoom-layer.options.minZoom)/3):8
+                zoom: layer.options.initialZoom||((layer.options.minZoom!==undefined)?Math.floor(layer.options.minZoom+(layer.options.maxZoom-layer.options.minZoom)/3):8)
               };
             }
 
@@ -210,11 +259,14 @@ angular.module('webmappApp')
               q.promise.then(function(res){
                 // define the ui-leaflet geojson layer
                 list[layerName]={
-                  name: layerName,
-                  description: layer.description,
+                  _name: layerName,
+                  name: layer.description,
                   type: layer.type,
                   data: res.data,
                   visible: layer.visible || false,
+                  __center: $scope.getLayerCenter(layer),
+                  bounds: $scope.getLayerBounds(layer),
+                  CRS: layer.CRS,
                   layerParams: layer.options || {}
                 };
                 doneOne();
@@ -231,11 +283,14 @@ angular.module('webmappApp')
 
           } else {
             list[layerName]={
-              name: layerName,
-              description: layer.description,
+              _name: layerName,
+              name: layer.description,
               url: pathname+layer.url,
               type: layer.type,
+              CRS: layer.CRS,
               visible: layer.visible || false,
+              __center: $scope.getLayerCenter(layer),
+              bounds: $scope.getLayerBounds(layer),
               layerParams: layer.options || {}
             };
             doneOne();
@@ -459,6 +514,7 @@ angular.module('webmappApp')
 
       }, // drawEventHandlers
 
+      // update ui-leaflet-draw object list
       updateObjectList: function updateObjectList() {
         var features=$scope.features=[];
         console.log($scope.drawnItems._layers)
@@ -472,7 +528,7 @@ angular.module('webmappApp')
       // ui-leaflet events we want to receive
       events: {
           map: {
-            enable: ['mousemove', 'mousedown', 'move', 'moveend'],
+            enable: ['mousemove', 'mousedown', 'move', 'moveend', 'baselayerchange', 'overlayadd', 'overlayremove'],
             logic: 'emit'
           }
       }, // events
@@ -489,6 +545,7 @@ angular.module('webmappApp')
 
       coordsToDisplay: 'mouseCoords',
 
+      // projection when displaying mouse coords
       coordsProjection: 'LV95',
 
       // coords to be displayd in view
@@ -635,7 +692,6 @@ angular.module('webmappApp')
         if (val!=$scope.searchString) {
           $scope.searchString=val;
           $scope.$emit('updateSearchString');
-      //    $scope.updateGeoJSON(layer,$scope.searchString);
         }
       }, // onsearch
 
@@ -686,24 +742,32 @@ angular.module('webmappApp')
           var name=l.feature.properties.description;
           var fi=featureNames.indexOf(name);
 
+          var latlng1;
           // feature must be displayed ?
           if (fi>=0) {
             // check if it did move
             var latlng0=l.feature.properties.latlng;
-            var latlng1=features[name];
-            hasMoved=latlng0.lat!=latlng1.lat || latlnt0.lng!=latlng1.lng;
+            latlng1=features[name].properties.latlng;
+    //        console.log(latlng0,latlng1);
+            hasMoved=latlng0.lat!=latlng1.lat || latlng0.lng!=latlng1.lng || latlng0[0]!=latlng1[0] || latlng0[1]!=latlng1[1];
           }
 
           // not to be displayed or moved ?
           if (fi<0 || hasMoved) {
             fg_layer.removeLayer(l);
-
+            var labelId=l.feature.properties.layerName+'.'+name;
             // not to be displayed ?
             // remove label as well
             if (fi<0) {
-              var id=l.feature.properties.layerName+'.'+name;
-              $scope.map.removeLayer($scope.labels[id]);
+              $scope.map.removeLayer($scope.labels[labelId]);
               delete $scope.labels[id];
+            } else {
+              // move label
+              $scope.labels[labelId].setLatlng({
+                lat: latlng1.lat||latlng1[0]||0,
+                lng: latlng1.lng||latlng1[1]||0
+              });
+
             }
 
           } else {
@@ -714,11 +778,13 @@ angular.module('webmappApp')
         });
 
         // add new or moved features
-        layer.geojson.features.forEach(function(feature){
-          if (featureNames.indexOf(feature.properties.description)>=0) {
-            fg_layer.addData(feature);
-          }
-        });
+        if (featureNames.length) {
+          layer.geojson.features.forEach(function(feature){
+            if (featureNames.indexOf(feature.properties.description)>=0) {
+              fg_layer.addData(feature);
+            }
+          });
+        }
 
       }, // updateGeoJSON
 
@@ -758,6 +824,87 @@ angular.module('webmappApp')
         });
       }, // updateControls
 
+      getLayerByName: function getLayerByName(layerName) {
+        var layers=$scope.layers.baselayers;
+        for (var name in layers) {
+          if (layers[name] && layers[name].name==layerName) {
+            return layers[name];
+          }
+        }
+        layers=$scope.layers.overlays;
+        for (var name in layers) {
+          if (layers[name] && layers[name].name==layerName) {
+            return layers[name];
+          }
+        }
+
+      }, //getLayerByName
+
+      getCurrentLayer: function getCurrentLayer(){
+        if ($scope.currentLayer) {
+          return $scope.currentLayer;
+        } else {
+          var baselayers=$scope.layers['baselayers']||$scope.__layers['baselayers'];
+          for (var layerName in baselayers){
+            if (baselayers[layerName].visible) {
+              return baselayers[layerName];
+            }
+          }
+        }
+      }, // getCurrentLayer
+
+      baselayerChange: function baselayerChange(e,data) {
+        // store previous baselayer center and zoom
+        $scope.getCurrentLayer().__center=angular.copy($scope.center);
+        // the layer just displayed is now the current layer
+        var layer=$scope.currentLayer=$scope.getLayerByName(data.leafletEvent.name);
+
+        // update the CRS
+        var crsName=layer.CRS||'EPSG900913';
+        $scope.map.options.crs=L.CRS[crsName];
+
+        var bounds;
+        if (layer.type=='imageOverlay') {
+          // hide minimap for indoor layers
+          $('.leaflet-control-minimap, .leaflet-control-scale').hide(0);
+          // "vanilla" bounds
+          bounds=layer.bounds;
+          $scope.coordsProjection='WGS84';
+
+          // bring imageOverlay to back
+          for (var id in $scope.map._layers) {
+            if ($scope.map._layers[id]._url==layer.url) {
+              $scope.map._layers[id].bringToBack();
+            }
+          }
+
+        } else {
+          // show minimap for outdoor layers
+          $('.leaflet-control-minimap, .leaflet-control-scale').show(0);
+          // get "vanilla" bounds
+          bounds=[[layer.bounds.min.x,layer.bounds.min.y],[layer.bounds.max.x,layer.bounds.max.y]];
+          $scope.coordsProjection='LV95';
+        }
+        // restore view parameters
+        $scope.map.setMaxBounds(bounds);
+        $scope.map._resetView(L.latLng(layer.__center.lat,layer.__center.lng),layer.__center.zoom||0);
+        if (layer.__center.zoom===undefined) {
+          $scope.map.fitBounds(bounds);
+        }
+
+        // update beacons
+        $scope.$emit('baseLayerChanged');
+
+      }, // baselayerChange
+
+      overlayAdd: function overlayAdd(e,data) {
+        console.log(data.leafletEvent);
+      },
+
+      overlayRemove: function overlayRemove(e,data) {
+        console.log(data.leafletEvent);
+      },
+
       init: function init(){
         var q=$q.defer();
 
@@ -766,6 +913,9 @@ angular.module('webmappApp')
         $scope.axisButton.disable();
 
         $scope.beacons=beacons;
+        $scope.$on('leafletDirectiveMap.lf-battelle.baselayerchange', $scope.baselayerChange);
+        $scope.$on('leafletDirectiveMap.lf-battelle.overlayadd', $scope.overlayAdd);
+        $scope.$on('leafletDirectiveMap.lf-battelle.overlayremove', $scope.overlayRemove);
 
         $scope.loadLayers().then(function success(){
           $scope.setupEventHandlers();
