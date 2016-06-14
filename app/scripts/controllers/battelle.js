@@ -760,7 +760,7 @@ angular.module('webmappApp')
             // remove label as well
             if (fi<0) {
               $scope.map.removeLayer($scope.labels[labelId]);
-              delete $scope.labels[id];
+              delete $scope.labels[labelId];
             } else {
               // move label
               $scope.labels[labelId].setLatlng({
