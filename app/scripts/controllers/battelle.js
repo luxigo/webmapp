@@ -236,10 +236,10 @@ angular.module('webmappApp')
                 // prepare custom geojson layer
                 layer.name=layerName;
                 layer.scope=$scope;
-                layer.options={
+                angular.extend(layer.options,{
                   onEachFeature: $scope.geojson.onEachFeature,
                   layerName: layerName
-                };
+                });
 
                 $scope[layer.class].onload(layer,res,function(err,res){
                   if (err) {
@@ -267,7 +267,8 @@ angular.module('webmappApp')
                   __center: $scope.getLayerCenter(layer),
                   bounds: $scope.getLayerBounds(layer),
                   CRS: layer.CRS,
-                  layerParams: layer.options || {}
+                  layerParams: layer.params || {},
+                  layerOptions: layer.options || {}
                 };
                 doneOne();
 
@@ -291,7 +292,8 @@ angular.module('webmappApp')
               visible: layer.visible || false,
               __center: $scope.getLayerCenter(layer),
               bounds: $scope.getLayerBounds(layer),
-              layerParams: layer.options || {}
+              layerParams: layer.params || {},
+              layerOptions: layer.options || {}
             };
             doneOne();
           }
@@ -756,18 +758,21 @@ angular.module('webmappApp')
           if (fi<0 || hasMoved) {
             fg_layer.removeLayer(l);
             var labelId=l.feature.properties.layerName+'.'+name;
-            // not to be displayed ?
-            // remove label as well
-            if (fi<0) {
-              $scope.map.removeLayer($scope.labels[labelId]);
-              delete $scope.labels[labelId];
-            } else {
-              // move label
-              $scope.labels[labelId].setLatlng({
-                lat: latlng1.lat||latlng1[0]||0,
-                lng: latlng1.lng||latlng1[1]||0
-              });
-
+            if ($scope.labels[labelId]) {
+              // not to be displayed ?
+              // remove label as well
+              if (fi<0) {
+                $scope.map.removeLayer($scope.labels[labelId]);
+                delete $scope.labels[labelId];
+              } else {
+                // move label
+                if ($scope.labels[labelId].setLatlng) {
+                  $scope.labels[labelId].setLatlng({
+                    lat: latlng1.lat||latlng1[0]||0,
+                    lng: latlng1.lng||latlng1[1]||0
+                  });
+                }
+              }
             }
 
           } else {
@@ -889,7 +894,10 @@ angular.module('webmappApp')
         $scope.map.setMaxBounds(bounds);
         $scope.map._resetView(L.latLng(layer.__center.lat,layer.__center.lng),layer.__center.zoom||0);
         if (layer.__center.zoom===undefined) {
-          $scope.map.fitBounds(bounds);
+          // timeout needed for proper label positionning on first layer change after zoom
+          $timeout(function(){
+            $scope.map.fitBounds(bounds);
+          },100);
         }
 
         // update beacons
