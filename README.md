@@ -35,17 +35,19 @@ The layers directory (currently omitted) is webmapp/app/layers and should be cop
 
 Actually the application main view is "app/views/battelle" which is looking for 'layers/battelle/layers.json'
 
-The actual layers.json file format is:
+Baselayers examples:
 ```
 { 
   "layer_name": {
     "description": "layer name",
     "baseLayer": <boolean>,
     "visible": <boolean>,
-    "type": <leaflet-layer-type>,  // eg "xyz" or "geoJSONShape"
+    "type": <leaflet-layer-type>,  // eg "xyz", "geoJSONShape" or "imageOverlay"
+    "CRS": <crs>, // eg: "Simple" for imageOverlays
     "url": <url>, // according to leaflet layer type
     "projection": <proj4-projection-type>, // eg "WGS84"
-    "center": <coordinates-array>, // expressed in proj4-projection-type
+    "center": <coordinates-array>, // expressed in proj4-projection-type (pixel coordinates for imageOverlay)
+    "bounds": [ <coordinates-array>, <coordinates-array> ], // expressed in proj4-projection-type (pixel coordinates for imageOverlay)
     "options": <leaflet-layer-options>
     },
     ...
@@ -62,16 +64,34 @@ Dynamic geojson overlay example:
       "projection": "WGS84",
       "url": "/cassandra/find?model=repoble.currentxy&filter={\"fields\": [\"shortname\",\"x\",\"y\"]}",
       "refresh": "1000",
-      "class": "beacons",
+      "class": "beacons", // triggers $scope.beacons.onload
       "localsystem": {
-        "proj": "EPSG:2056",
-        "origin": [ 2499670.90206156, 1114753.42399633 ],
-        "downVector": [ 2499680.14609066, 1114764.71805181 ]
+        "photo": {
+          "proj": "EPSG:2056",
+          "origin": [ 2499670.90206156, 1114753.42399633 ],
+          "downVector": [ 2499680.14609066, 1114764.71805181 ]
+        },
+        "biblio": {
+          "switchAxis": true, // downVector is now "rightVector"...
+          "invertXAxis": false,
+          "invertYAxis": false,
+          "origin": [-424, 418],
+          "downVector": [643, 419],
+          "downVectorLength": 18
+        }
       },
       "options": {
+        "style": {
+          "fillColor": "yellow",
+          "weight": 2,
+          "opacity": 1,
+          "color": "blue",
+          "dashArray": 3,
+          "fillOpacity": 0.7
+        }
       }
     },
-```
+    ```
   
   
 # Development
