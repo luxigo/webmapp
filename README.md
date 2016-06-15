@@ -15,7 +15,7 @@ To generate the base layers from geolocated raster images we are using [ctb-tile
 
 For indoor plans we only need an imageOverlay layers, using "Simple" CRS.
 
-For the geojson overlays, when the data received from the url specified in layers.json is not geojson and/or when we need to refresh the data, we can define a scope.<className>.onload method (that should take care of generating the geojson if needed and setup the refresh loop) that will be called at initialization time. (see the "beacons.js" service in this example)
+For the geojson overlays, when the data received from the url specified in layers.json needs pre-processing and/or when we need to refresh the data, we can define a scope.<className>.onload method (that should take care of generating the geojson if needed and setup the refresh loop) that will be called at initialization time. (see the "beacons.js" service in this example)
 
 [Yeoman] (http://yeoman.io) [generator-angular] (https://github.com/yeoman/generator-angular) was choosed because it's brings in:
 - a formatted collaborative environment
