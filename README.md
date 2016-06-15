@@ -9,7 +9,7 @@ We began to develop an application aiming to display live map overlays for sever
 
 Layers must be defined in layers/layers.json (see below)
 
-The base layers (satelite, plan, geojson) have to be available offline.
+The base layers (satellite, plan, geojson) have to be available offline.
 
 To generate the base layers from geolocated raster images we are using [ctb-tiles] (https://github.com/geo-data/cesium-terrain-builder) or [gdal2tiles] (http://www.gdal.org/gdal2tiles.html)
 
