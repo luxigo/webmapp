@@ -56,7 +56,6 @@ Baselayers examples:
     "bounds": [ <coordinates-array>, <coordinates-array> ], // expressed in proj4-projection-type (pixel coordinates for imageOverlay)
     "options": <leaflet-layer-options>
     },
-    ...
 }
 ```
 Dynamic geojson overlay example:
@@ -97,9 +96,9 @@ Dynamic geojson overlay example:
         }
       }
     },
-    ```
-  
-  
+
+```
+
 # Development
 
 ## Prerequisite
