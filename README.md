@@ -2,26 +2,32 @@
 webapp for web maps based on angularjs and ui-leaflet
 
 ## Status
-Early development stage
+Proof of concept
 
 ## Background
 We began to develop an application aiming to display live map overlays for several pre-defined locations using [ui-leaflet] (https://github.com/angular-ui/ui-leaflet).
 
-The base layers (sattelite, plan, geojson) have to be available offline.
+Layers must be defined in layers/layers.json (see below)
 
-To generate the base layers we are using [ctb-tiles] (https://github.com/geo-data/cesium-terrain-builder) or [gdal2tiles] (http://www.gdal.org/gdal2tiles.html) with geolocated raster images or vector data.
+The base layers (satelite, plan, geojson) have to be available offline.
 
-To get live information from the servers we can use long polls, server events or socktetio.
+To generate the base layers from geolocated raster images we are using [ctb-tiles] (https://github.com/geo-data/cesium-terrain-builder) or [gdal2tiles] (http://www.gdal.org/gdal2tiles.html)
+
+For indoor plans we only need an imageOVerlay layers, using "Simple" CRS.
+
+For the geojson overlays, when the data received from the url specified in layers.json is not geojson and/or when we need to refresh the data, we can define a scope.<className>.onload method (that should take care of generating the geojson if needed and setup the refresh loop) that will be called at initialization time. (see the "beacons.js" service in this example)
 
 [Yeoman] (http://yeoman.io) [generator-angular] (https://github.com/yeoman/generator-angular) was choosed because it's brings in:
 - a formatted collaborative environment
 - powerful tools like bower, wiredep, sass, auto-prefixer, live-reload and more
 
-To start we are simply fetching a json file repeatedly from the server to update the overlays. 
-
 Subsequently, [Strongloop] (http://www.strongloop.com) and the [loopback-sdk-angular] (https://github.com/strongloop/loopback-sdk-angular) could be used to generate a database abstraction layer (a HTTP REST API plus a javascript CRUD API available both server side and client side) and manage access control lists (ACL) 
 
-An [angular directive] (https://docs.angularjs.org/guide/directive) will eventually emerge from the actual view, and a (dynamic) json resource could be used to define and configure the available views.
+Unfortunately the loopback cassandra connector at https://github.com/strongloop-community/loopback-connector-cassandra looks dead and is unusable at the time I'm writing this.
+
+"Battelle.js" and "beacons.js" are named like this for historical reasons and it does not reflect the reality very well anymore since "layers.json" is now used to define and configure the available views or locations (base layers) and any type of geojson overlays could be displayed using "beacons.js"
+
+An [angular directive] (https://docs.angularjs.org/guide/directive) will eventually emerge from the actual battelle.js view.
 
 
 # Installation
