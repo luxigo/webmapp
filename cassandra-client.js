@@ -4,10 +4,21 @@ module.exports=(function(){
   const cassandra=require('cassandra-driver');
 
   // load cassandra client configuration
-  const config=require('./cassandra-client-config.json');
+  const client_config=require('./cassandra-client-config.json');
+
+  if (!client_config.enabled) {
+    return {
+      middleware: {
+        find: function(req,res,next){
+          res.statusCode=500;
+          res.end("cassandra client disabled in cassandra-client-config.json !");
+        }
+      }
+    }
+  }
 
   // instantiate cassandra client
-  const client = new cassandra.Client(config);
+  const client = new cassandra.Client(client_config.config);
 
   // connect to database
   client.connect(function (err) {

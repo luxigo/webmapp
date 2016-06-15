@@ -1,3 +1,6 @@
 {
-  "contactPoints": ["localhost"]
+  "enabled": true,
+  "config": {
+    "contactPoints": ["localhost"]
+  }
 }
