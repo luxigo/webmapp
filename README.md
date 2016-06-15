@@ -15,7 +15,7 @@ To generate the base layers from geolocated raster images we are using [ctb-tile
 
 For indoor plans we only need an imageOverlay layers, using "Simple" CRS.
 
-For the geojson overlays, when the data received from the url specified in layers.json needs pre-processing and/or when we need to refresh the data, we can define a scope.<className>.onload method (that should take care of generating the geojson if needed and setup the refresh loop) that will be called at initialization time. (see the "beacons.js" service in this example)
+For the geojson overlays, when the data received from the url specified in layers.json needs pre-processing and/or when it needs to be refreshed, we can define a scope.&lt;className&gt;.onload method to process data as needed and setup the refresh loop at initialization time. (see the "beacons.js" service in this example)
 
 [Yeoman] (http://yeoman.io) [generator-angular] (https://github.com/yeoman/generator-angular) was choosed because it's brings in:
 - a formatted collaborative environment
@@ -23,7 +23,7 @@ For the geojson overlays, when the data received from the url specified in layer
 
 Subsequently, [Strongloop] (http://www.strongloop.com) and the [loopback-sdk-angular] (https://github.com/strongloop/loopback-sdk-angular) could be used to generate a database abstraction layer (a HTTP REST API plus a javascript CRUD API available both server side and client side) and manage access control lists (ACL) 
 
-Unfortunately the loopback cassandra connector at https://github.com/strongloop-community/loopback-connector-cassandra looks dead and is unusable at the time I'm writing this.
+The loopback cassandra connector at https://github.com/strongloop-community/loopback-connector-cassandra looks dead and is unusable at the time I'm writing this.
 
 "Battelle.js" and "beacons.js" are named like this for historical reasons and it does not reflect the reality very well anymore since "layers.json" is now used to define and configure the available views or locations (base layers) and any type of geojson overlays could be displayed using "beacons.js"
 
@@ -135,11 +135,16 @@ npm install
 bower install
 ```
 
+## Cassandra database
+Our test application was fetching data from a cassandra database.
+If you want to setup or disable cassandra database support, edit cassandra-client-config.json.
+
 ## Build, serve and reload
 ```
-grunt --force watch
-grunt serve
+grunt --force serve
 ```
+
+
 
 # YO
 
