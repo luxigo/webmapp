@@ -149,19 +149,33 @@ angular.module('webmappApp')
           });
 
           layer.scope.$on('baseLayerChanged',function(){
-            beacons.resetFeatureGroup(layer);
+              beacons.resetFeatureGroup(layer);
+              if (layer.visible) {
+                layer.scope.updateGeoJSON(layer);
+              }
           });
 
-          layer.scope.$on('overlayChanged',function(){
-            beacons.resetFeatureGroup(layer);
-          });
+          layer.scope.$on('overlayChanged',function(e,originalEvent,data){
+            if (data.leafletEvent.name==layer.description) {
+              beacons.resetFeatureGroup(layer);
+              if (originalEvent.name.split('.').pop()=='overlayadd') {
+                layer.visible=true;
+                layer.scope.updateGeoJSON(layer);
+              } else {
+                layer.visible=false;
+              }
+            }
+        });
 
           layer.scope.$on('zoomEvent',function(e,originalEvent){
-            if (originalEvent.name.split('.').pop()=='zoomstart') {
-              $('.leaflet-label').hide(0);
-            } else {
-              beacons.resetFeatureGroup(layer);
-              $('.leaflet-label').show(0);
+            if (layer.visible) {
+              if (originalEvent.name.split('.').pop()=='zoomstart') {
+                $('.leaflet-label').hide(0);
+              } else {
+                beacons.resetFeatureGroup(layer);
+                layer.scope.updateGeoJSON(layer);
+                $('.leaflet-label').show(0);
+              }
             }
           });
 
@@ -179,13 +193,23 @@ angular.module('webmappApp')
       }, // beacons_onload
 
       resetFeatureGroup: function resetFeatureGroup(layer){
-        console.log('reset');
         var fg_layer=layer.scope.getGeoJSONLayer(layer.name);
         if (fg_layer) {
+          // store the feature group layer reference here
+          // beacause it will not be found on overlay remove !
+          layer.fg_layer=fg_layer;
           fg_layer.clearLayers();
-          layer.scope.labels={};
+        } else {
+          if (layer.fg_layer) {
+            layer.fg_layer.clearLayers();
+            layer.fg_layer=null;
+          }
         }
-        layer.scope.updateGeoJSON(layer);
+        for (var labelId in layer.scope.labels) {
+          if (labelId.split('.')[0]==layer.name) {
+            delete layer.scope.labels[labelId];
+          }
+        }
       }, // resetFeatureGroup
 
       // iterate: get the latest geojson (server should make it a long poll)
