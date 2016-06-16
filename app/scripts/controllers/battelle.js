@@ -530,7 +530,7 @@ angular.module('webmappApp')
       // ui-leaflet events we want to receive
       events: {
           map: {
-            enable: ['mousemove', 'mousedown', 'move', 'moveend', 'baselayerchange', 'overlayadd', 'overlayremove'],
+            enable: ['mousemove', 'mousedown', 'move', 'moveend', 'baselayerchange', 'overlayadd', 'overlayremove', 'zoomstart', 'zoomend'],
             logic: 'emit'
           }
       }, // events
@@ -699,16 +699,18 @@ angular.module('webmappApp')
 
       getGeoJSONLayer: function getGeoJSONLayer(layerName) {
         var fg_layer;
-        $scope.map.eachLayer(function(lf_layer){
-          if (!fg_layer &&
-            lf_layer._layers &&
-            lf_layer.options &&
-            lf_layer.options.layerName==layerName
-          ) {
-            fg_layer=lf_layer;
-            return false;
-          }
-        });
+        if ($scope.map) {
+          $scope.map.eachLayer(function(lf_layer){
+            if (!fg_layer &&
+              lf_layer._layers &&
+              lf_layer.options &&
+              lf_layer.options.layerName==layerName
+            ) {
+              fg_layer=lf_layer;
+              return false;
+            }
+          });
+        }
         return fg_layer;
 
       }, // getGeoJSONLayer
@@ -905,12 +907,12 @@ angular.module('webmappApp')
 
       }, // baselayerChange
 
-      overlayAdd: function overlayAdd(e,data) {
-        console.log(data.leafletEvent);
+      overlayChange: function overlayChange(e,data) {
+        $scope.$emit('overlayChanged',e,data);
       },
 
-      overlayRemove: function overlayRemove(e,data) {
-        console.log(data.leafletEvent);
+      zoomEvent: function zoomEvent(e){
+        $scope.$emit('zoomEvent',e);
       },
 
       init: function init(){
@@ -922,8 +924,10 @@ angular.module('webmappApp')
 
         $scope.beacons=beacons;
         $scope.$on('leafletDirectiveMap.lf-battelle.baselayerchange', $scope.baselayerChange);
-        $scope.$on('leafletDirectiveMap.lf-battelle.overlayadd', $scope.overlayAdd);
-        $scope.$on('leafletDirectiveMap.lf-battelle.overlayremove', $scope.overlayRemove);
+        $scope.$on('leafletDirectiveMap.lf-battelle.overlayadd', $scope.overlayChange);
+        $scope.$on('leafletDirectiveMap.lf-battelle.overlayremove', $scope.overlayChange);
+        $scope.$on('leafletDirectiveMap.lf-battelle.zoomstart', $scope.zoomEvent);
+        $scope.$on('leafletDirectiveMap.lf-battelle.zoomend', $scope.zoomEvent);
 
         $scope.loadLayers().then(function success(){
           $scope.setupEventHandlers();

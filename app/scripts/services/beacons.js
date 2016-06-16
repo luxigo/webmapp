@@ -149,14 +149,20 @@ angular.module('webmappApp')
           });
 
           layer.scope.$on('baseLayerChanged',function(){
-            var fg_layer=layer.scope.getGeoJSONLayer(layer.name);
-            if (fg_layer) {
-              fg_layer.clearLayers();
-              layer.scope.labels={};
+            beacons.resetFeatureGroup(layer);
+          });
+
+          layer.scope.$on('overlayChanged',function(){
+            beacons.resetFeatureGroup(layer);
+          });
+
+          layer.scope.$on('zoomEvent',function(e,originalEvent){
+            if (originalEvent.name.split('.').pop()=='zoomstart') {
+              $('.leaflet-label').hide(0);
+            } else {
+              beacons.resetFeatureGroup(layer);
+              $('.leaflet-label').show(0);
             }
-            $timeout(function(){
-              layer.scope.updateGeoJSON(layer);
-            });
           });
 
           // setup refresh loop
@@ -171,6 +177,16 @@ angular.module('webmappApp')
         }
 
       }, // beacons_onload
+
+      resetFeatureGroup: function resetFeatureGroup(layer){
+        console.log('reset');
+        var fg_layer=layer.scope.getGeoJSONLayer(layer.name);
+        if (fg_layer) {
+          fg_layer.clearLayers();
+          layer.scope.labels={};
+        }
+        layer.scope.updateGeoJSON(layer);
+      }, // resetFeatureGroup
 
       // iterate: get the latest geojson (server should make it a long poll)
       iter: function iter(layer){
