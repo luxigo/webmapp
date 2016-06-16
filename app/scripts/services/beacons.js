@@ -203,6 +203,10 @@ angular.module('webmappApp')
           if (layer.fg_layer) {
             layer.fg_layer.clearLayers();
             layer.fg_layer=null;
+          } else {
+            // we dont want to remove labels from scope.labels if we
+            // did not remove the layers
+            return;
           }
         }
         for (var labelId in layer.scope.labels) {
