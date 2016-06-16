@@ -766,8 +766,8 @@ angular.module('webmappApp')
                 delete $scope.labels[labelId];
               } else {
                 // move label
-                if ($scope.labels[labelId].setLatlng) {
-                  $scope.labels[labelId].setLatlng({
+                if ($scope.labels[labelId].setLatLng) {
+                  $scope.labels[labelId].setLatLng({
                     lat: latlng1.lat||latlng1[0]||0,
                     lng: latlng1.lng||latlng1[1]||0
                   });
