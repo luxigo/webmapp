@@ -78,8 +78,8 @@ Dynamic geojson overlay example:
         },
         "biblio": {
           "switchAxis": true, // downVector is now "rightVector"...
-          "invertXAxis": false,
-          "invertYAxis": false,
+          "invertXaxis": false,
+          "invertYaxis": false,
           "origin": [-424, 418],
           "downVector": [643, 419],
           "downVectorLength": 18
