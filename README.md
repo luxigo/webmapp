@@ -13,7 +13,7 @@ The base layers (satellite, plan, geojson) have to be available offline.
 
 To generate the base layers from geolocated raster images we are using [ctb-tiles] (https://github.com/geo-data/cesium-terrain-builder) or [gdal2tiles] (http://www.gdal.org/gdal2tiles.html)
 
-For indoor plans we only need an imageOverlay layers, using "Simple" CRS.
+For indoor plans we only need imageOverlay layers, using "Simple" CRS.
 
 For the geojson overlays, when the data received from the url specified in layers.json needs pre-processing and/or when it needs to be refreshed, we can define a scope.&lt;className&gt;.onload method to process data as needed and setup the refresh loop at initialization time. (see the "beacons.js" service in this example)
 
