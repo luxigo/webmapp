@@ -224,7 +224,7 @@ angular.module('webmappApp')
           }
 
           if (layer.type=='geoJSONShape') {
-            var layerURL=(layer.url.substr(0,1)=='/')?layer.url:pathname+layer.url;
+            var layerURL=(layer.url.substr(0,1)=='/'||layer.url.substr(0,4)=='http')?layer.url:pathname+layer.url;
 
             // get layer url
             $http.get(layerURL).then(function(res){
@@ -286,7 +286,7 @@ angular.module('webmappApp')
             list[layerName]={
               _name: layerName,
               name: layer.description,
-              url: pathname+layer.url,
+              url: (layer.url.substr(0,1)=='/'||layer.url.substr(0,4)=='http') ? layer.url : pathname+layer.url,
               type: layer.type,
               CRS: layer.CRS,
               visible: layer.visible || false,
@@ -857,6 +857,7 @@ angular.module('webmappApp')
               return baselayers[layerName];
             }
           }
+          alert('There is no visible base layer !');
         }
       }, // getCurrentLayer
 
