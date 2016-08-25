@@ -1,0 +1,80 @@
+/* line 1, ../../app/styles/battelle.scss */
+div#battelle {
+  width: 100%;
+  position: absolute;
+  left: 0;
+  top: 0px;
+  bottom: 0px;
+}
+/* line 8, ../../app/styles/battelle.scss */
+div#battelle #crosshair-h {
+  /*
+      width: 1cm;
+      margin-left: -0.5cm;
+      top: 50%;
+      left: 50%;
+   */
+  width: 100%;
+  top: 0;
+  left: 0;
+  height: 1px;
+}
+/* line 20, ../../app/styles/battelle.scss */
+div#battelle #crosshair-v {
+  /*
+      height: 1cm;
+      left: 50%;
+      top: 50%;
+      margin-top: -0.5cm;
+   */
+  top: 0;
+  left: 0;
+  width: 1px;
+  height: 100%;
+}
+/* line 32, ../../app/styles/battelle.scss */
+div#battelle .hair {
+  z-index: 99;
+  pointer-events: none;
+  position: fixed;
+  background-color: black;
+  display: none;
+  box-shadow: 1px 1px yellow;
+}
+/* line 40, ../../app/styles/battelle.scss */
+div#battelle .wrapper {
+  position: fixed;
+  z-index: 1000;
+  top: 4px;
+  width: 100%;
+}
+/* line 45, ../../app/styles/battelle.scss */
+div#battelle .wrapper #mousecoords {
+  display: none;
+  width: 20em;
+  margin: auto;
+  text-shadow: 1 1 1 rgba(255, 255, 255, 0.3);
+  text-align: center;
+  background-color: white;
+  border: 1px solid black;
+  border-radius: 4px;
+  font: fixed;
+}
+/* line 58, ../../app/styles/battelle.scss */
+div#battelle .leaflet-control-container {
+  z-index: 999;
+}
+/* line 62, ../../app/styles/battelle.scss */
+div#battelle search {
+  position: absolute;
+  top: 10px;
+  width: 100%;
+}
+/* line 67, ../../app/styles/battelle.scss */
+div#battelle search .custom-search-input {
+  width: 20%;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+/*# sourceMappingURL=battelle.css.map */

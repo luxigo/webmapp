@@ -1,0 +1,39 @@
+{
+  "name": "ui-leaflet-draw",
+  "version": "0.0.3",
+  "description": "angular directive for ui-leaflet to utilize Leaflet.Draw",
+  "main": "./dist/ui-leaflet-draw.js",
+  "homepage": "https://github.com/angular-ui/ui-leaflet-draw",
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/angular-ui/ui-leaflet-draw.git"
+  },
+  "author": "Nicholas McCready",
+  "license": "MIT",
+  "dependencies": {
+    "leaflet": "0.7.x",
+    "leaflet-draw": "git://github.com/michaelguild13/Leaflet.draw.git#master",
+    "angular": "1.x",
+    "ui-leaflet": "1.x"
+  },
+  "devDependencies": {
+    "angular-mocks": "1.x"
+  },
+  "ignore": [
+    ".*",
+    "spec",
+    "*.coffee",
+    "*.json",
+    ".gitignore",
+    ".travis.yml",
+    "*.html",
+    "package.js",
+    "*.md",
+    "src",
+    "gulp",
+    "scripts",
+    "node_modules",
+    "bower_components",
+    "tmp"
+  ]
+}

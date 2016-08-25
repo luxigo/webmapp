@@ -1,0 +1,90 @@
+{
+  "osm": {
+    "description": "OpenStreetMap",
+    "baseLayer": true,
+    "visible": true,
+    "type": "xyz",
+    "projection": "WGS84",
+    "center": [6.139659589658123, 46.17669730826682],
+    "bounds": [ [6.134877210978626, 46.17912469332739], [6.144361502067148, 46.174236383886466] ],
+    "_url": "http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
+    "url": "osm/{z}/{x}/{y}.png",
+    "options": {
+      "attribution": "Base map tiles &copy; <a href=\"https://www.openstreetmap.org/copyright\">OpenStreetMap</a>",
+      "maxZoom": 27,
+      "maxNativeZoom": 19,
+      "minZoom": 4,
+      "initialZoom": 17
+    }
+  },
+  "photo": {
+    "description": "Orthophoto SITG 2011 5cm",
+    "baseLayer": false,
+    "visible": true,
+    "type": "xyz",
+    "url": "orthophoto/{z}/{x}/{y}.png",
+    "projection": "EPSG:2056",
+    "center": [ 2499691.72858496, 1114746.43215720 ],
+    "bounds": [ [ 2499326.95612353, 1115022.37100785 ], [ 2500050.25939458, 1114466.88998445 ]],
+    "options": {
+      "tms": true,
+      "attribution":"Orthophoto extracted 23/08/2016 from <a href=\"http://www.sitg.ch/donnees\" target=\"_blank\">Système d'information du territoire à Genève (SITG)</a> and tiled by <a href=\"http://www.alsenet.com\">ALSENET SA</a>",
+      "maxNativeZoom": 21,
+      "maxZoom": 27,
+      "minZoom": 10,
+      "opacity": 0.8
+    }
+  },
+
+  "biblio": {
+    "description": "Plan intérieur - Bibliothèque",
+    "baseLayer": true,
+    "CRS": "Simple",
+    "visible": false,
+    "type": "imageOverlay",
+    "center": [ 0, 0 ],
+    "bounds": [ [ -688, -990], [ 688, 990] ],
+    "url": "indoor/BatelleA_rez-001-000.CROP.new-rectified.png",
+    "options": {
+      "maxNativeZoom": 4,
+      "maxZoom": 1,
+      "minZoom": -2
+    }
+  },
+
+  "beacons": {
+    "description": "Beacons",
+    "baseLayer": false,
+    "visible": true,
+    "type": "geoJSONShape",
+    "projection": "WGS84",
+    "_url": "/cassandra/find?model=repoble.currentxy&filter={\"fields\": [\"shortname\",\"x\",\"y\"]}",
+    "url": "beacons.json",
+    "refresh": "1000",
+    "class": "beacons",
+    "localsystem": {
+      "default": {
+        "switchAxis": false,
+        "proj": "EPSG:2056",
+        "origin": [ 2499689.74827613, 1114739.44426958 ],
+        "downVector": [ 2499679.52496618, 1114747.56374639 ]
+      },
+      "biblio": {
+        "switchAxis": false,
+        "origin": [-424, 418],
+        "downVector": [643, 419],
+        "downVectorLength": 18
+      }
+    },
+    "options": {
+      "style": {
+        "fillColor": "yellow",
+        "weight": 2,
+        "opacity": 1,
+        "color": "blue",
+        "dashArray": 3,
+        "fillOpacity": 0.7
+      }
+    }
+  }
+}

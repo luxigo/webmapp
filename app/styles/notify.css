@@ -1,0 +1,23 @@
+/* line 1, ../../app/styles/notify.scss */
+.alert-minimalist {
+  background-color: #f1f2f0;
+  border-color: rgba(149, 149, 149, 0.3);
+  border-radius: 3px;
+  color: #959595;
+  padding: 10px;
+}
+
+/* line 8, ../../app/styles/notify.scss */
+.alert-minimalist > [data-notify="icon"] {
+  margin-right: 12px;
+}
+
+/* line 11, ../../app/styles/notify.scss */
+.alert-minimalist > [data-notify="title"] {
+  color: #333333;
+  display: block;
+  font-weight: bold;
+  margin-bottom: 5px;
+}
+
+/*# sourceMappingURL=notify.css.map */

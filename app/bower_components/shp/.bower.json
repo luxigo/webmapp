@@ -1,0 +1,32 @@
+{
+  "name": "shp",
+  "version": "3.3.2",
+  "description": "A binary shapefile loader, for javascript. Not many caveats",
+  "homepage": "https://github.com/calvinmetcalf/shapefile-js",
+  "authors": [
+    "Calvin Metcalf <calvin.metcalf@state.ma.us>"
+  ],
+  "main": "dist/shp.js",
+  "keywords": [
+    "shp",
+    "gis",
+    "geojson"
+  ],
+  "license": "MIT",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ],
+  "_release": "3.3.2",
+  "_resolution": {
+    "type": "version",
+    "tag": "v3.3.2",
+    "commit": "dc2b29bfecbb39b24f950ada7dde9605aa842f59"
+  },
+  "_source": "https://github.com/calvinmetcalf/shapefile-js.git",
+  "_target": "^3.3.2",
+  "_originalSource": "shp"
+}

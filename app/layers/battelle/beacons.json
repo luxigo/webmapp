@@ -1,0 +1,49 @@
+{
+    "info": {
+        "queriedHost": "127.0.0.1:9042",
+        "triedHosts": {},
+        "achievedConsistency": 10
+    },
+    "rows": [
+        {
+            "shortname": "X3",
+            "x": -0.35,
+            "y": 10.65
+        },
+        {
+            "shortname": "BLE123",
+            "x": 5.12,
+            "y": -2.13
+        },
+        {
+            "shortname": "X1",
+            "x": 12,
+            "y": 6.5
+        }
+    ],
+    "rowLength": 3,
+    "columns": [
+        {
+            "name": "shortname",
+            "type": {
+                "code": 13,
+                "type": null
+            }
+        },
+        {
+            "name": "x",
+            "type": {
+                "code": 7,
+                "type": null
+            }
+        },
+        {
+            "name": "y",
+            "type": {
+                "code": 7,
+                "type": null
+            }
+        }
+    ],
+    "pageState": null
+}
