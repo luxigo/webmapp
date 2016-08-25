@@ -863,7 +863,10 @@ angular.module('webmappApp')
 
       baselayerChange: function baselayerChange(e,data) {
         // store previous baselayer center and zoom
-        $scope.getCurrentLayer().__center=angular.copy($scope.center);
+        var currentLayer=$scope.getCurrentLayer();
+        currentLayer.__center=angular.copy($scope.center);
+        currentLayer.__center.zoom=$scope.map.getZoom();
+
         // the layer just displayed is now the current layer
         var layer=$scope.currentLayer=$scope.getLayerByName(data.leafletEvent.name);
 
@@ -879,13 +882,6 @@ angular.module('webmappApp')
           bounds=layer.bounds;
           $scope.coordsProjection='WGS84';
 
-          // bring imageOverlay to back
-          for (var id in $scope.map._layers) {
-            if ($scope.map._layers[id]._url==layer.url) {
-              $scope.map._layers[id].bringToBack();
-            }
-          }
-
         } else {
           // show minimap for outdoor layers
           $('.leaflet-control-minimap, .leaflet-control-scale').show(0);
@@ -893,9 +889,19 @@ angular.module('webmappApp')
           bounds=[[layer.bounds.min.x,layer.bounds.min.y],[layer.bounds.max.x,layer.bounds.max.y]];
           $scope.coordsProjection='LV95';
         }
+
+        // bring the baselayer to back
+        for (var id in $scope.map._layers) {
+          if ($scope.map._layers[id]._url==layer.url) {
+            $scope.map._layers[id].bringToBack();
+          }
+        }
+
         // restore view parameters
+        $scope.map._zoom=layer.__center.zoom||0;
         $scope.map.setMaxBounds(bounds);
-        $scope.map._resetView(L.latLng(layer.__center.lat,layer.__center.lng),layer.__center.zoom||0);
+        $scope.map._resetView(L.latLng(layer.__center.lat,layer.__center.lng),$scope.map._zoom);
+
         if (layer.__center.zoom===undefined) {
           // timeout needed for proper label positionning on first layer change after zoom
           $timeout(function(){

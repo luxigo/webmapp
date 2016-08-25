@@ -77,7 +77,7 @@ angular.module('webmappApp')
 
       getLocalSystem: function beacons_getLocalSystem(layer){
         var baselayer=layer.scope.getCurrentLayer();
-        return layer.localsystem && layer.localsystem[baselayer._name];
+        return layer.localsystem && (layer.localsystem[baselayer._name] || layer.localsystem.default);
       }, // getLocalSystem
 
       updateAxis: function beacons_updateAxis(layer){
