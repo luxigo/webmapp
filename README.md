@@ -4,6 +4,18 @@ webapp for web maps based on angularjs and ui-leaflet
 ## Status
 Proof of concept
 
+## Demo
+The online demo is available here:
+- http://luxigo.github.io/webmapp
+
+The configuration file is:
+- https://github.com/luxigo/webmapp/tree/gh-pages/app/layers/battelle/layers.json
+
+And the "offline" map tiles are stored in
+- https://github.com/luxigo/webmapp/tree/gh-pages/app/layers/battelle
+
+Please always give appropriate credit and respect the licensing terms for map tiles and layer imagery.
+
 ## Background
 We began to develop an application aiming to display live map overlays for several pre-defined locations using [ui-leaflet] (https://github.com/angular-ui/ui-leaflet).
 
