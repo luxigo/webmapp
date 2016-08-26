@@ -10,7 +10,7 @@
     "_url": "http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
     "url": "osm/{z}/{x}/{y}.png",
     "options": {
-      "attribution": "Base map tiles &copy; <a href=\"https://www.openstreetmap.org/copyright\">OpenStreetMap</a>",
+      "attribution": "Base map tiles &copy; <a href=\"https://www.openstreetmap.org/copyright\">OpenStreetMap contributors</a> under <a href=\"http://opendatacommons.org/licences/odbl\">ODbl</a>",
       "maxZoom": 27,
       "maxNativeZoom": 19,
       "minZoom": 4,
